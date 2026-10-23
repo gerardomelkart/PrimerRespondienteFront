@@ -1,0 +1,28 @@
+@if(mensaje()) { <p class="aviso" role="alert">{{ mensaje() }}</p> }
+
+                <div class="titulo"><div><span class="etiqueta">RECEPCIÓN DE INFORMACIÓN</span><h1>Cargar detenciones</h1><p class="muted">Valida tu archivo antes de confirmar la entrega.</p></div><button class="secundario" (click)="descargar('plantilla', 'Plantilla_PrimerRespondiente.xlsx')"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button></div>
+                <div class="progreso"><span [class.actual]="!validacion() && !aceptada()">1. Seleccionar archivo</span><span [class.actual]="validacion()">2. Revisar validación</span><span [class.actual]="aceptada()">3. Folio y acuse</span></div>
+                <section class="tarjeta">
+                    <h2>Archivo de {{ session.sesion()!.usuario.institucion }}</h2>
+                    <div class="campos-periodo"><div><label for="inicio">Inicio del periodo</label><input id="inicio" type="date" [(ngModel)]="inicio" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado()"></div><div><label for="fin">Fin del periodo</label><input id="fin" type="date" [(ngModel)]="fin" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado()"></div></div>
+                    <div class="arrastre" [class.arrastrando]="arrastrando" (dragover)="$event.preventDefault(); arrastrando = true" (dragleave)="arrastrando = false" (drop)="soltar($event)">
+                        <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i><strong>{{ archivo?.name || 'Arrastra aquí tu archivo Excel' }}</strong><span>Formato .xlsx · Hasta 10 MB · Hasta 20,000 registros</span><label class="secundario selector" for="archivo">Seleccionar archivo</label><input id="archivo" class="visually-hidden" type="file" accept=".xlsx" (change)="seleccionar($event)" [disabled]="ocupado()">
+                    </div>
+                    <div class="acciones"><button class="primario" (click)="validar()" [disabled]="!archivo || ocupado()">{{ ocupado() ? 'Procesando…' : 'Validar archivo' }}</button></div>
+                </section>
+                @if(validacion(); as resultado)
+                {
+                    <section id="resultado" class="tarjeta resultado" aria-live="polite">
+                        <h2>{{ resultado.valido ? 'Archivo validado' : 'Revisa los errores del archivo' }}</h2><p>{{ resultado.totalRegistros }} registros válidos. {{ resultado.errores.length }} errores.</p>
+                        @if(resultado.avisos.length) { <div class="aviso"><strong>Observaciones</strong>@for(aviso of resultado.avisos; track $index) { <p>{{ aviso }}</p> }</div> }
+                        @if(resultado.errores.length)
+                        {
+                            <div class="tabla-scroll"><table><thead><tr><th>Fila</th><th>Campo</th><th>Error</th></tr></thead><tbody>@for(error of resultado.errores; track $index) { <tr><td>{{ error.fila }}</td><td>{{ error.campo }}</td><td>{{ error.mensaje }}</td></tr> }</tbody></table></div>
+                        }
+                        @if(resultado.valido) { <p>Al confirmar se registrará la entrega y se generará su folio.</p><button class="primario" (click)="confirmar()" [disabled]="ocupado()">Confirmar entrega</button> }
+                    </section>
+                }
+                @if(aceptada(); as carga)
+                {
+                    <section class="tarjeta confirmacion" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><h2>Entrega recibida</h2><p>Folio de entrega</p><strong class="folio">{{ carga.folio }}</strong><p>{{ carga.totalRegistros }} registros aceptados</p><button class="primario" (click)="descargar('cargas/' + carga.id + '/acuse', 'Acuse_' + carga.folio + '.html')">Descargar acuse</button></section>
+                }

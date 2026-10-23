@@ -1,0 +1,22 @@
+<main class="acceso">
+        <section class="presentacion">
+            <span class="etiqueta">CORPORACIONES FEDERALES Y FISCALÍAS</span>
+            <h1>Reporte y seguimiento<br>de detenciones.</h1>
+            <p>Recepción de reportes de SEDENA, SEMAR, Guardia Nacional y SSPC.</p>
+            <div class="pasos"><span>01 · Reportar</span><span>02 · Validar</span><span>03 · Dar seguimiento</span></div>
+        </section>
+        <section class="tarjeta login">
+            <span class="etiqueta">ACCESO AL SISTEMA</span>
+            <h2>Bienvenido</h2>
+            <p class="muted">Ingresa con tu cuenta institucional.</p>
+            <form (ngSubmit)="login()">
+                <label for="usuario">Usuario</label>
+                <input id="usuario" name="usuario" [(ngModel)]="usuario" autocomplete="username" required maxlength="80">
+                <label for="password">Contraseña</label>
+                <input id="password" name="password" type="password" [(ngModel)]="password" autocomplete="current-password" required maxlength="200">
+                @if(mensaje()) { <p class="aviso error" role="alert">{{ mensaje() }}</p> }
+                <button class="primario ancho" [disabled]="ocupado()">{{ ocupado() ? 'Ingresando…' : 'Iniciar sesión' }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+            </form>
+            <p class="pie-login">Centro Nacional de Información</p>
+        </section>
+    </main>

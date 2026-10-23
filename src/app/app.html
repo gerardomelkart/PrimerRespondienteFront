@@ -1,0 +1,12 @@
+<header class="encabezado">
+    <img src="img/LogoSEGURIDAD.png" alt="Seguridad · Secretariado Ejecutivo">
+    <div class="identidad"><span>Eficiencia Ministerial</span><strong>Primer Respondiente</strong></div>
+</header>
+@if(!session.sesion())
+{
+    <app-login />
+}
+@else
+{
+    <app-main-layout />
+}
