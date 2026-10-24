@@ -1,0 +1,220 @@
+:host {
+    display: block;
+}
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.admin-header h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+}
+.admin-header p {
+    margin: 0;
+    color: #667085;
+}
+.admin-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+.kpi-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    border: 1px solid #dddddd;
+    border-left: 6px solid var(--siiid-guinda);
+    background: #ffffff;
+    box-shadow: 0 3px 8px #00000012;
+}
+.kpi-card strong {
+    font-size: 34px;
+    line-height: 1;
+    color: var(--siiid-guinda);
+}
+.kpi-card span {
+    font-size: 12px;
+    font-weight: 700;
+}
+.kpi-gold {
+    border-left-color: var(--siiid-dorado);
+}
+.usuarios-card {
+    overflow: hidden;
+}
+.usuarios-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+.buscador {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(420px, 100%);
+    padding: 0 10px;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #777777;
+}
+.buscador input {
+    min-width: 0;
+    height: 38px;
+    padding: 8px;
+    border: 0;
+    font-size: 12px;
+}
+.usuarios-table {
+    font-size: 13px;
+}
+.usuarios-table th {
+    background: var(--siiid-guinda);
+    color: #ffffff;
+}
+.usuario-nombre {
+    font-weight: 700;
+}
+.rol-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: #f2eef0;
+    color: var(--siiid-guinda);
+    font-size: 11px;
+    white-space: nowrap;
+}
+.usuarios-mensaje {
+    padding: 32px;
+    text-align: center;
+    color: #667085;
+}
+.pagination-row, .pagination-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.pagination-row {
+    padding: 16px;
+    border-top: 1px solid #dddddd;
+    font-size: 12px;
+}
+.pagination-actions button {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+.usuario-dialog {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(720px, 100%);
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: #ffffff;
+    color: #222222;
+    box-shadow: -8px 0 24px #00000030;
+}
+.usuario-dialog::backdrop {
+    background: #00000060;
+}
+.usuario-dialog form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.drawer-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px;
+    background: var(--siiid-guinda);
+    color: #ffffff;
+}
+.drawer-header h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+}
+.drawer-header p {
+    margin: 0;
+    color: #ffffffcc;
+}
+.drawer-close {
+    padding: 0 6px;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font-size: 32px;
+    line-height: 1;
+}
+.drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 20px;
+}
+.span-2 {
+    grid-column: span 2;
+}
+.form-grid label span {
+    color: #b00020;
+}
+.form-grid small {
+    display: block;
+    margin-top: 6px;
+    color: #667085;
+    font-size: 11px;
+}
+.permiso-nota {
+    margin-top: 24px;
+    padding: 12px;
+    border-left: 4px solid var(--siiid-dorado);
+    background: #fff8eb;
+    color: #72531f;
+    font-size: 12px;
+    line-height: 1.6;
+}
+.drawer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 22px;
+    border-top: 1px solid #dddddd;
+}
+@media(max-width: 1200px) {
+    .admin-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .admin-header, .usuarios-card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .buscador {
+        width: 100%;
+    }
+}
+@media(max-width: 600px) {
+    .admin-kpis, .form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .span-2 {
+        grid-column: auto;
+    }
+    .pagination-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

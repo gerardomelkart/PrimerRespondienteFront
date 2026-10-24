@@ -1,0 +1,12 @@
+<span class="etiqueta">INFORMES</span>
+<h1>Consulta de información</h1>
+<p class="muted">{{ completo() ? 'Reporte completo' : 'Reporte primer respondiente' }}</p>
+<section class="siiid-card informe">
+    <div class="siiid-card-header"><i class="fa-solid fa-table" aria-hidden="true"></i> {{ completo() ? 'Reporte completo' : 'Reporte primer respondiente' }}</div>
+    <div class="informe-pendiente">
+        <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+        <h2>Vista en preparación</h2>
+        <p>La consulta y sus filtros se habilitarán cuando se definan los criterios del reporte.</p>
+        <span>Sin información disponible en esta vista provisional.</span>
+    </div>
+</section>

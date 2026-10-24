@@ -1,13 +1,95 @@
-@if(mensaje()) { <p class="aviso" role="alert">{{ mensaje() }}</p> }
+<div class="admin-page">
+    <div class="admin-header">
+        <div>
+            <h1>Administración de usuarios</h1>
+            <p>Gestión de cuentas y perfiles de Eficiencia Ministerial.</p>
+        </div>
+        <button type="button" class="primario" (click)="abrirNuevo()"><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Nuevo usuario</button>
+    </div>
+    @if(mensaje()) { <p class="aviso" role="status">{{ mensaje() }}</p> }
+    <div class="admin-kpis">
+        <section class="kpi-card"><strong>{{ cargando() ? '—' : usuarios().length }}</strong><span>Cuentas activas</span></section>
+        <section class="kpi-card"><strong>{{ cargando() ? '—' : contar('PRIMER_RESPONDIENTE') }}</strong><span>Primeros respondientes</span></section>
+        <section class="kpi-card"><strong>{{ cargando() ? '—' : contar('FISCALIA') }}</strong><span>Fiscalías</span></section>
+        <section class="kpi-card kpi-gold"><strong>{{ cargando() ? '—' : contar('SUPER_USUARIO') }}</strong><span>Superusuarios</span></section>
+    </div>
+    <section class="siiid-card usuarios-card">
+        <div class="siiid-card-header usuarios-card-header">
+            <span><i class="fa-solid fa-users" aria-hidden="true"></i> Usuarios del sistema</span>
+            <div class="buscador">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" aria-label="Buscar usuarios" placeholder="Buscar por nombre, usuario, institución o perfil..." [ngModel]="busqueda()" (ngModelChange)="buscar($event)">
+            </div>
+        </div>
+        @if(cargando())
+        {
+            <p class="usuarios-mensaje" role="status">Cargando usuarios…</p>
+        }
+        @else
+        {
+            <div class="table-responsive">
+                <table class="usuarios-table">
+                    <thead><tr><th>Nombre</th><th>Usuario</th><th>Perfil</th><th>Institución</th><th>Ámbito</th><th>Entidad</th></tr></thead>
+                    <tbody>
+                        @for(usuario of visibles(); track usuario.id)
+                        {
+                            <tr>
+                                <td class="usuario-nombre">{{ usuario.nombre }}</td>
+                                <td>{{ usuario.usuario }}</td>
+                                <td><span class="rol-badge">{{ nombrePerfil(usuario.rol) }}</span></td>
+                                <td>{{ usuario.institucion || 'Todas las instituciones' }}</td>
+                                <td>{{ usuario.ambito }}</td>
+                                <td>{{ usuario.entidad ?? '—' }}</td>
+                            </tr>
+                        }
+                        @empty
+                        {
+                            <tr><td colspan="6" class="usuarios-mensaje">No se encontraron usuarios.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination-row">
+                <span>Mostrando {{ visibles().length }} de {{ filtrados().length }} usuarios</span>
+                <div class="pagination-actions">
+                    <button type="button" class="secundario" [disabled]="paginaActual() <= 1" (click)="pagina.set(paginaActual() - 1)">Anterior</button>
+                    <span>{{ paginaActual() }} / {{ totalPaginas() }}</span>
+                    <button type="button" class="secundario" [disabled]="paginaActual() >= totalPaginas()" (click)="pagina.set(paginaActual() + 1)">Siguiente</button>
+                </div>
+            </div>
+        }
+    </section>
+</div>
 
-                <span class="etiqueta">ADMINISTRACIÓN</span><h1>Usuarios</h1><section class="tarjeta"><h2>Crear usuario</h2><form class="form-usuarios" (ngSubmit)="crearUsuario()">
-                    <div><label for="nuevoUsuario">Usuario</label><input id="nuevoUsuario" name="nuevoUsuario" [(ngModel)]="nuevo.usuario" required maxlength="80" autocomplete="off"></div>
-                    <div><label for="nuevoNombre">Nombre</label><input id="nuevoNombre" name="nuevoNombre" [(ngModel)]="nuevo.nombre" required maxlength="200"></div>
-                    <div><label for="nuevoPassword">Contraseña inicial</label><input id="nuevoPassword" name="nuevoPassword" type="password" [(ngModel)]="nuevo.password" minlength="12" maxlength="72" required autocomplete="new-password"></div>
-                    <div><label for="nuevoRol">Perfil</label><select id="nuevoRol" name="nuevoRol" [(ngModel)]="nuevo.rol" (ngModelChange)="cambiarPerfil()"><option value="PRIMER_RESPONDIENTE">Primer respondiente</option><option value="FISCALIA">Fiscalía</option><option value="SUPER_USUARIO">Superusuario</option><option value="CONSULTA">Consulta</option></select></div>
-                    <div><label for="institucion">Institución</label><select id="institucion" name="institucion" [(ngModel)]="nuevo.institucion">@if(nuevo.rol === 'SUPER_USUARIO' || nuevo.rol === 'CONSULTA') { <option value="">Todas las instituciones</option> } @if(nuevo.rol !== 'FISCALIA') { <option>SEDENA</option><option>SEMAR</option><option>GN</option><option>SSPC</option> } @if(nuevo.rol === 'FISCALIA') { <option>FGR</option> }</select></div>
-                    <div><label for="ambito">Ámbito</label><select id="ambito" name="ambito" [(ngModel)]="nuevo.ambito"><option value="NACIONAL">Nacional</option><option value="ESTATAL">Estatal</option><option value="FEDERAL">Federal</option></select></div>
-                    @if(nuevo.ambito === 'ESTATAL') { <div><label for="entidad">Clave de entidad (1–32)</label><input id="entidad" name="entidad" type="number" min="1" max="32" [(ngModel)]="nuevo.entidad" required></div> }
-                    <div class="acciones"><button class="primario" [disabled]="ocupado()">Crear usuario</button></div>
-                </form><p class="muted">Las fiscalías estatales se incorporarán cuando se confirme su catálogo. El seguimiento ministerial aún está pendiente.</p></section>
-                <section class="tarjeta"><h2>Cuentas activas</h2><div class="tabla-scroll"><table><thead><tr><th>Usuario</th><th>Nombre</th><th>Perfil</th><th>Institución</th><th>Ámbito</th></tr></thead><tbody>@for(usuario of usuarios(); track usuario.id) { <tr><td>{{ usuario.usuario }}</td><td>{{ usuario.nombre }}</td><td>{{ usuario.rol }}</td><td>{{ usuario.institucion || '—' }}</td><td>{{ usuario.ambito }}</td></tr> }</tbody></table></div></section>
+<dialog #editor class="usuario-dialog" aria-labelledby="titulo-usuario" (cancel)="cancelarCierre($event)">
+    <form #formulario="ngForm" (ngSubmit)="formulario.valid && crearUsuario()">
+        <div class="drawer-header">
+            <div><h2 id="titulo-usuario">Nuevo usuario</h2><p>Registrar una cuenta de acceso al sistema.</p></div>
+            <button type="button" class="drawer-close" aria-label="Cerrar formulario" [disabled]="ocupado()" (click)="cerrarEditor()">×</button>
+        </div>
+        <div class="drawer-body">
+            @if(mensajeFormulario()) { <p class="aviso error" role="alert">{{ mensajeFormulario() }}</p> }
+            <fieldset [disabled]="ocupado()">
+                <legend class="visually-hidden">Datos de la cuenta</legend>
+                <div class="form-grid">
+                    <div class="span-2"><label for="nuevoNombre">Nombre completo <span>*</span></label><input id="nuevoNombre" name="nuevoNombre" [(ngModel)]="nuevo.nombre" required maxlength="200" autocomplete="name"></div>
+                    <div><label for="nuevoUsuario">Usuario <span>*</span></label><input id="nuevoUsuario" name="nuevoUsuario" [(ngModel)]="nuevo.usuario" required maxlength="80" autocomplete="off"></div>
+                    <div><label for="nuevoPassword">Contraseña inicial <span>*</span></label><input id="nuevoPassword" name="nuevoPassword" type="password" [(ngModel)]="nuevo.password" minlength="12" maxlength="72" required autocomplete="new-password"><small>Mínimo 12 caracteres; máximo 72 bytes UTF-8.</small></div>
+                    <div class="span-2"><label for="nuevoRol">Perfil <span>*</span></label><select id="nuevoRol" name="nuevoRol" [(ngModel)]="nuevo.rol" (ngModelChange)="cambiarPerfil()">@for(perfil of perfiles; track perfil.valor) { <option [value]="perfil.valor">{{ perfil.nombre }}</option> }</select></div>
+                    <div><label for="institucion">Institución</label><select id="institucion" name="institucion" [(ngModel)]="nuevo.institucion">
+                        @if(nuevo.rol === 'SUPER_USUARIO' || nuevo.rol === 'CONSULTA') { <option value="">Todas las instituciones</option> }
+                        @if(nuevo.rol !== 'FISCALIA') { <option>SEDENA</option><option>SEMAR</option><option>GN</option><option>SSPC</option> }
+                        @if(nuevo.rol === 'FISCALIA') { <option>FGR</option> }
+                    </select></div>
+                    <div><label for="ambito">Ámbito <span>*</span></label><select id="ambito" name="ambito" [(ngModel)]="nuevo.ambito" [disabled]="nuevo.rol === 'SUPER_USUARIO'"><option value="NACIONAL">Nacional</option><option value="ESTATAL">Estatal</option><option value="FEDERAL">Federal</option></select></div>
+                    @if(nuevo.ambito === 'ESTATAL') { <div><label for="entidad">Clave de entidad (1–32) <span>*</span></label><input id="entidad" name="entidad" type="number" min="1" max="32" [(ngModel)]="nuevo.entidad" required></div> }
+                </div>
+            </fieldset>
+            <p class="permiso-nota">Las fiscalías estatales se incorporarán cuando se confirme su catálogo. El seguimiento ministerial está pendiente de definición.</p>
+        </div>
+        <div class="drawer-actions">
+            <button type="button" class="secundario" [disabled]="ocupado()" (click)="cerrarEditor()">Cancelar</button>
+            <button type="submit" class="primario" [disabled]="ocupado() || formulario.invalid">{{ ocupado() ? 'Guardando…' : 'Guardar usuario' }}</button>
+        </div>
+    </form>
+</dialog>

@@ -1,13 +1,13 @@
-@if(mensaje()) { <p class="aviso" role="alert">{{ mensaje() }}</p> }
-
-                <span class="etiqueta">PANEL DE INICIO</span><h1>Bienvenido, {{ session.sesion()!.usuario.nombre }}</h1>
-                <p class="muted">Consulta las entregas y operaciones disponibles para tu perfil.</p>
-                @if(session.sesion()!.usuario.rol === 'FISCALIA')
-                {
-                    <section class="tarjeta"><h2>Seguimiento ministerial</h2><p>La generación de plantillas y la recepción de respuestas se habilitarán al definir las reglas operativas con el área responsable.</p></section>
-                }
-                @else
-                {
-                    <div class="resumen"><section class="tarjeta"><span>Entregas recientes visibles</span><strong>{{ cargas().length }}</strong><small>Hasta las últimas 200 entregas</small></section><section class="tarjeta"><span>Institución</span><strong>{{ session.sesion()!.usuario.institucion || 'Nacional' }}</strong><small>Alcance {{ session.sesion()!.usuario.ambito.toLowerCase() }}</small></section></div>
-                    <section class="tarjeta inicio-accion"><div><h2>Detenciones de corporaciones federales</h2><p>Descarga el formato, prepara tu archivo y consulta el resultado de cada entrega.</p></div><button class="primario" (click)="ir.emit(session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE' ? 'carga' : 'entregas')">{{ session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE' ? 'Nueva carga' : 'Consultar entregas' }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></section>
-                }
+<span class="etiqueta">EFICIENCIA MINISTERIAL</span>
+<h1>Bienvenido, {{ session.sesion()!.usuario.nombre }}</h1>
+<p class="muted">Primer Respondiente · {{ session.sesion()!.usuario.institucion || 'Administración nacional' }}</p>
+<section class="tarjeta inicio-accion">
+    <div>
+        <h2>{{ session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE' ? 'Carga de información' : 'Consulta de información' }}</h2>
+        <p class="muted">Selecciona una opción del menú para continuar.</p>
+    </div>
+    @if(session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE')
+    {
+        <button type="button" class="primario" (click)="ir.emit('carga')"><i class="fa-solid fa-upload" aria-hidden="true"></i> Integrar información</button>
+    }
+</section>
