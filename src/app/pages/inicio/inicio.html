@@ -3,10 +3,10 @@
 <p class="muted">Primer Respondiente · {{ session.sesion()!.usuario.institucion || 'Administración nacional' }}</p>
 <section class="tarjeta inicio-accion">
     <div>
-        <h2>{{ session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE' ? 'Carga de información' : 'Consulta de información' }}</h2>
+        <h2>{{ session.puede('cargar') ? 'Carga de información' : 'Consulta de información' }}</h2>
         <p class="muted">Selecciona una opción del menú para continuar.</p>
     </div>
-    @if(session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE')
+    @if(session.puede('cargar'))
     {
         <button type="button" class="primario" (click)="ir.emit('carga')"><i class="fa-solid fa-upload" aria-hidden="true"></i> Integrar información</button>
     }

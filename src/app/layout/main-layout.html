@@ -18,11 +18,11 @@
             </div>
             <div class="system-info">
                 <strong>{{ session.sesion()!.usuario.institucion || 'Administración nacional' }}</strong>
-                <span>{{ session.sesion()!.usuario.rol.replaceAll('_', ' ') }}</span>
+                <span>{{ session.nombrePerfil(session.sesion()!.usuario.rol) }}</span>
             </div>
         </div>
         <nav class="menu" aria-label="Principal">
-            @if(session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE')
+            @if(session.puede('cargar'))
             {
                 <button type="button" class="menu-link menu-group" [attr.aria-expanded]="cargaAbierta" aria-controls="menu-carga" (click)="cargaAbierta = !cargaAbierta">
                     <i class="fa-solid fa-upload" aria-hidden="true"></i> Carga de información
@@ -52,7 +52,7 @@
                     </button>
                 </div>
             }
-            @if(session.sesion()!.usuario.rol === 'SUPER_USUARIO')
+            @if(session.puede('usuarios'))
             {
                 <button type="button" class="menu-link menu-group" [attr.aria-expanded]="administracionAbierta" aria-controls="menu-administracion" (click)="administracionAbierta = !administracionAbierta">
                     <i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i> Administración
@@ -73,12 +73,12 @@
     <main class="contenido">
         <div class="ruta">Eficiencia Ministerial <span>/</span> Primer Respondiente <span>/</span> {{ tituloPagina }}</div>
         @if(pagina === 'inicio') { <app-inicio (ir)="navegar($event)" /> }
-        @if(pagina === 'carga' && session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE') { <app-carga /> }
+        @if(pagina === 'carga' && session.puede('cargar')) { <app-carga /> }
         @if(pagina === 'reporte-primer-respondiente' || pagina === 'reporte-completo')
         {
             <app-informes [completo]="pagina === 'reporte-completo'" />
         }
-        @if(pagina === 'usuarios' && session.sesion()!.usuario.rol === 'SUPER_USUARIO') { <app-usuarios /> }
+        @if(pagina === 'usuarios' && session.puede('usuarios')) { <app-usuarios /> }
         <footer>Centro Nacional de Información · Secretariado Ejecutivo del Sistema Nacional de Seguridad Pública</footer>
     </main>
 </div>
