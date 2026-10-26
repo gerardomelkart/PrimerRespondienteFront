@@ -1,7 +1,6 @@
 import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { ConfiguracionService } from '../../core/services/configuracion.service';
 import { Usuario } from '../../core/models/modelos';
 
 @Component({
@@ -21,20 +20,13 @@ export class UsuariosPage
     readonly usuarios = signal<Usuario[]>([]);
     readonly busqueda = signal('');
     readonly pagina = signal(1);
-    readonly configuracion = inject(ConfiguracionService);
-    get porPagina() { return this.configuracion.numero('Usuarios.PorPagina'); }
-    get perfiles() { return this.configuracion.datos()!.roles; }
-    get rolSeleccionado() { return this.perfiles.find(rol => rol.codigo === this.nuevo.rol); }
-    get ambitosDisponibles()
-    {
-        const config = this.configuracion.datos()!;
-        return config.ambitos.filter(ambito => config.rolesAmbitos.some(item => item.rol === this.nuevo.rol && item.ambito === ambito.codigo));
-    }
-    get institucionesDisponibles()
-    {
-        return this.configuracion.datos()!.instituciones.filter(institucion => !this.rolSeleccionado?.tipoInstitucion || institucion.tipo === this.rolSeleccionado.tipoInstitucion);
-    }
-    get requiereEntidad() { return this.configuracion.datos()!.ambitos.find(ambito => ambito.codigo === this.nuevo.ambito)?.requiereEntidad ?? false; }
+    readonly porPagina = 15;
+    readonly perfiles = [
+        { valor: 'PRIMER_RESPONDIENTE', nombre: 'Primer respondiente' },
+        { valor: 'FISCALIA', nombre: 'Fiscalía' },
+        { valor: 'SUPER_USUARIO', nombre: 'Superusuario' },
+        { valor: 'CONSULTA', nombre: 'Consulta' }
+    ];
     readonly filtrados = computed(() =>
     {
         const texto = this.normalizar(this.busqueda());
@@ -54,12 +46,7 @@ export class UsuariosPage
 
     nombrePerfil(rol: string)
     {
-        return this.perfiles.find(perfil => perfil.codigo === rol)?.nombre ?? rol;
-    }
-
-    nombreEntidad(id: number | null)
-    {
-        return this.configuracion.datos()!.entidades.find(entidad => entidad.id === id)?.nombre ?? '—';
+        return this.perfiles.find(perfil => perfil.valor === rol)?.nombre ?? rol;
     }
 
     contar(rol: string)
@@ -74,7 +61,7 @@ export class UsuariosPage
 
     usuarioVacio()
     {
-        return { usuario: '', nombre: '', password: '', rol: '', institucion: '', ambito: '', entidad: null as number | null };
+        return { usuario: '', nombre: '', password: '', rol: 'PRIMER_RESPONDIENTE', institucion: 'SEDENA', ambito: 'NACIONAL', entidad: null as number | null };
     }
 
     abrirNuevo()
@@ -130,7 +117,7 @@ export class UsuariosPage
         }
         this.ocupado.set(true);
         this.mensajeFormulario.set('');
-        const datos = { ...this.nuevo, institucion: this.nuevo.institucion || null, entidad: this.requiereEntidad ? this.nuevo.entidad : null };
+        const datos = { ...this.nuevo, institucion: this.nuevo.institucion || null, entidad: this.nuevo.ambito === 'ESTATAL' ? this.nuevo.entidad : null };
         this.http.post('api/usuarios', datos).subscribe({
             next: () =>
             {
@@ -149,8 +136,8 @@ export class UsuariosPage
 
     cambiarPerfil()
     {
-        this.nuevo.institucion = '';
-        this.nuevo.ambito = this.ambitosDisponibles.length === 1 ? this.ambitosDisponibles[0].codigo : '';
+        this.nuevo.institucion = this.nuevo.rol === 'PRIMER_RESPONDIENTE' ? 'SEDENA' : this.nuevo.rol === 'FISCALIA' ? 'FGR' : '';
+        this.nuevo.ambito = this.nuevo.rol === 'FISCALIA' ? 'FEDERAL' : 'NACIONAL';
         this.nuevo.entidad = null;
     }
 

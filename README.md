@@ -38,7 +38,3 @@ Las URL de API y assets son relativas al base-href para admitir otras rutas de p
 Sangría de cuatro espacios y llaves en línea aparte, conforme al fragmento del usuario; `.editorconfig` y `.gitattributes` lo documentan. Se incluye lockfile para usar `npm ci`. `.gitignore` excluye dependencias, compilados, archivos de editor y secretos.
 
 Se verificó compilación de producción y publicación bajo `/primer-respondiente/`. Se revisaron escritorio/móvil y el recorrido visual con respuestas HTTP simuladas (sin SQL); no representa validación de persistencia. La prueba de punta a punta de carga/folio requiere ejecutar los scripts SQL y configurar la conexión real de pruebas.
-
-## Configuración desde base de datos
-
-Esta entrega requiere aplicar `003_configuracion.sql` del repositorio de BD antes de actualizar API y front. En una base existente no repetir la creación ni eliminar datos. Los catálogos, permisos y parámetros operativos se obtienen de SQL; ya no existen listas de instituciones, roles o ámbitos en el formulario. Ver `docs/configuracion.md` en EficienciaMinisterialBD para tablas, parámetros, permisos y orden de actualización. Conexión y claves permanecen en User Secrets o entorno.

@@ -3,7 +3,7 @@ export interface Usuario
     id: number;
     usuario: string;
     nombre: string;
-    rol: string;
+    rol: 'SUPER_USUARIO' | 'PRIMER_RESPONDIENTE' | 'FISCALIA' | 'CONSULTA';
     institucion: string | null;
     ambito: string;
     entidad: number | null;

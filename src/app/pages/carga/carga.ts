@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { SessionService } from '../../core/services/session.service';
 import { CargasService } from '../../core/services/cargas.service';
-import { ConfiguracionService } from '../../core/services/configuracion.service';
 import { Carga, Validacion, Usuario } from '../../core/models/modelos';
 
 @Component({
@@ -14,7 +13,6 @@ import { Carga, Validacion, Usuario } from '../../core/models/modelos';
 })
 export class CargaPage
 {
-    readonly configuracion = inject(ConfiguracionService);
     readonly session = inject(SessionService);
     private readonly cargasService = inject(CargasService);
     readonly ocupado = signal(false);
@@ -44,10 +42,10 @@ export class CargaPage
         this.validacion.set(null);
         this.aceptada.set(null);
         this.mensaje.set('');
-        if(archivo && (!archivo.name.toLowerCase().endsWith(this.configuracion.texto('Carga.Extension')) || archivo.size > this.configuracion.numero('Carga.MaxBytes')))
+        if(archivo && (!archivo.name.toLowerCase().endsWith('.xlsx') || archivo.size > 10000000))
         {
             this.archivo = null;
-            this.mensaje.set('Seleccione un archivo ' + this.configuracion.texto('Carga.Extension') + ' de hasta ' + this.configuracion.numero('Carga.MaxBytes') + ' bytes.');
+            this.mensaje.set('Seleccione un Excel .xlsx de hasta 10 MB.');
             return;
         }
         this.archivo = archivo;
