@@ -42,7 +42,7 @@
     <section id="resultado-demo" class="tarjeta confirmacion" aria-live="polite">
         <i class="fa-solid fa-circle-check" aria-hidden="true"></i><span class="etiqueta">SIMULACIÓN COMPLETADA</span><h2>Así se verá la recepción de la entrega</h2><p class="muted">Folio de demostración</p><strong class="folio">{{ folio }}</strong>
         <dl class="resumen-demo"><div><dt>Corporación</dt><dd>{{ institucion }}</dd></div><div><dt>Periodo</dt><dd>{{ mostrar(inicio) }} al {{ mostrar(fin) }}</dd></div><div><dt>Registros ficticios</dt><dd>{{ muestra.length }}</dd></div><div><dt>Archivo de referencia</dt><dd>{{ nombre }}</dd></div></dl>
-        <p class="muted">No se creó una entrega real ni se almacenó información.</p>
-        <div class="botones-demo"><button type="button" class="secundario" (click)="comprobante()"><i class="fa-solid fa-download" aria-hidden="true"></i> Comprobante demo</button><button type="button" class="primario" (click)="nueva()">Nueva demostración</button></div>
+        <p class="muted">No se creó una entrega real ni se almacenó información.</p><p class="muted">El PDF es un ejemplo fijo con datos ficticios, independiente del archivo seleccionado.</p>
+        <div class="botones-demo"><a class="secundario acuse-pdf" href="demo/Acuse_DEMO_PrimerRespondiente.pdf" download="Acuse_DEMO_PrimerRespondiente.pdf"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Descargar acuse de prueba (PDF)</a><button type="button" class="primario" (click)="nueva()">Nueva demostración</button></div>
     </section>
 }

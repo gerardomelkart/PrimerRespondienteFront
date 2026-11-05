@@ -89,21 +89,6 @@ export class CargaDemoPage
         document.getElementById('titulo-carga-demo')?.scrollIntoView({ behavior: 'smooth' });
     }
 
-    comprobante()
-    {
-        const texto = ['COMPROBANTE DE DEMOSTRACIÓN · SIN VALIDEZ OFICIAL', this.folio,
-            'Institución: ' + this.institucion, 'Archivo seleccionado: ' + this.nombre,
-            'Periodo: ' + fechaDemo(this.inicio) + ' al ' + fechaDemo(this.fin),
-            'Registros sintéticos: ' + this.muestra.length,
-            'Simulación local. No se procesó el archivo ni se almacenó una entrega.'].join('\r\n');
-        const url = URL.createObjectURL(new Blob(['\ufeff', texto], { type: 'text/plain;charset=utf-8' }));
-        const enlace = document.createElement('a');
-        enlace.href = url;
-        enlace.download = 'Comprobante_DEMO.txt';
-        enlace.click();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
-
     private desplazar()
     {
         setTimeout(() => document.getElementById('resultado-demo')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
