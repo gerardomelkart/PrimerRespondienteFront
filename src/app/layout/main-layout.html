@@ -10,19 +10,22 @@
             <div class="user-main">
                 <img class="imagen-institucional" src="img/logoMujBandera.png" alt="Identidad institucional del Gobierno de México">
                 <div class="user-info">
-                    <strong class="user-name">{{ session.sesion()!.usuario.nombre }}</strong>
+                    <strong class="user-name">{{ usuario.nombre }}</strong>
                     <button type="button" class="user-home-button" (click)="navegar('inicio')">
                         <i class="fa-solid fa-house" aria-hidden="true"></i> Regresar al inicio
                     </button>
                 </div>
             </div>
             <div class="system-info">
-                <strong>{{ session.sesion()!.usuario.institucion || 'Administración nacional' }}</strong>
-                <span>{{ session.sesion()!.usuario.rol.replaceAll('_', ' ') }}</span>
+                <strong>{{ usuario.institucion || 'Administración nacional' }}</strong>
+                <span>{{ usuario.rol.replaceAll('_', ' ') }}</span>
             </div>
         </div>
         <nav class="menu" aria-label="Principal">
-            @if(session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE')
+            <button type="button" class="menu-link" [class.active]="pagina === 'carga-demo'" [attr.aria-current]="pagina === 'carga-demo' ? 'page' : null" (click)="navegar('carga-demo')">
+                <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Carga de demostración
+            </button>
+            @if(usuario.rol === 'PRIMER_RESPONDIENTE')
             {
                 <button type="button" class="menu-link menu-group" [attr.aria-expanded]="cargaAbierta" aria-controls="menu-carga" (click)="cargaAbierta = !cargaAbierta">
                     <i class="fa-solid fa-upload" aria-hidden="true"></i> Carga de información
@@ -52,7 +55,7 @@
                     </button>
                 </div>
             }
-            @if(session.sesion()!.usuario.rol === 'SUPER_USUARIO')
+            @if(!demo() && usuario.rol === 'SUPER_USUARIO')
             {
                 <button type="button" class="menu-link menu-group" [attr.aria-expanded]="administracionAbierta" aria-controls="menu-administracion" (click)="administracionAbierta = !administracionAbierta">
                     <i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i> Administración
@@ -68,17 +71,26 @@
                 }
             }
         </nav>
-        <button type="button" class="salir" (click)="session.cerrar()"><i class="fa-solid fa-power-off" aria-hidden="true"></i> Cerrar sesión</button>
+        <button type="button" class="salir" (click)="salir()"><i class="fa-solid fa-power-off" aria-hidden="true"></i> {{ demo() ? 'Salir de la demostración' : 'Cerrar sesión' }}</button>
     </aside>
     <main class="contenido">
         <div class="ruta">Eficiencia Ministerial <span>/</span> Primer Respondiente <span>/</span> {{ tituloPagina }}</div>
-        @if(pagina === 'inicio') { <app-inicio (ir)="navegar($event)" /> }
-        @if(pagina === 'carga' && session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE') { <app-carga /> }
+        @if(pagina === 'inicio')
+        {
+            @if(demo())
+            {
+                <span class="etiqueta">PRESENTACIÓN · DATOS FICTICIOS</span><h1>Eficiencia Ministerial</h1><p class="muted">Recepción de detenciones y seguimiento ministerial. Demostración visual del sistema.</p>
+                <section class="tarjeta"><h2>Recorre la presentación</h2><p>Consulta los reportes de ejemplo o presenta el proceso de carga con registros ficticios.</p><button type="button" class="primario" (click)="navegar('carga-demo')">Iniciar demostración de carga</button></section>
+            }
+            @else { <app-inicio (ir)="navegar($event)" /> }
+        }
+        @if(pagina === 'carga-demo') { <app-carga-demo /> }
+        @if(pagina === 'carga' && usuario.rol === 'PRIMER_RESPONDIENTE') { <app-carga /> }
         @if(pagina === 'reporte-primer-respondiente' || pagina === 'reporte-completo')
         {
             <app-informes [completo]="pagina === 'reporte-completo'" />
         }
-        @if(pagina === 'usuarios' && session.sesion()!.usuario.rol === 'SUPER_USUARIO') { <app-usuarios /> }
+        @if(!demo() && pagina === 'usuarios' && usuario.rol === 'SUPER_USUARIO') { <app-usuarios /> }
         <footer>Centro Nacional de Información · Secretariado Ejecutivo del Sistema Nacional de Seguridad Pública</footer>
     </main>
 </div>

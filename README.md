@@ -94,3 +94,11 @@ Se han realizado compilaciones de producción y pruebas visuales con respuestas 
 ## Configuración y datos
 
 La conexión SQL y la clave JWT se configuran exclusivamente en la API mediante User Secrets o variables de entorno. No deben incorporarse secretos al código Angular: el navegador recibe los archivos compilados del front. No subir archivos reales de detenciones, datos personales ni logs a estos repositorios.
+
+## Presentación visual sin API
+
+Ejecutar `npm ci` y `npm start`; abrir `http://localhost:4200/?demo=1`. Esta entrada muestra una presentación aislada sin crear una sesión ni consultar la API. La entrada normal conserva la autenticación existente.
+
+Los dos informes contienen 48 registros sintéticos, filtros, paginación, exportación CSV y detalle. El reporte completo separa información de corporación, RND y fiscalía, tomando los encabezados de los formatos de referencia. No contiene registros extraídos de esos archivos.
+
+La opción «Carga de demostración» permite elegir un archivo de ejemplo y recorrer una validación, observaciones y folio simulados. Si se selecciona un Excel del equipo, solo se muestra su nombre: no se leen ni envían sus bytes. El comprobante descargable es de demostración y no tiene validez oficial. Esta vista también está disponible desde el menú después de iniciar sesión; la carga real conserva su ruta y permisos.

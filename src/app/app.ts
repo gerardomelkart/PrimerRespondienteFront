@@ -10,5 +10,6 @@ import { MainLayout } from './layout/main-layout';
 })
 export class App
 {
+    readonly demo = new URLSearchParams(window.location.search).get('demo') === '1';
     readonly session = inject(SessionService);
 }
