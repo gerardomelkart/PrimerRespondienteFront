@@ -6,7 +6,7 @@ Interfaz Angular del primer módulo de Eficiencia Ministerial. Presenta el acces
 
 Eficiencia Ministerial es una plataforma en desarrollo para recibir información de detenciones y, en una etapa posterior, incorporar el seguimiento ministerial de las fiscalías. Su arquitectura contempla una API central y una base propia, con **Primer Respondiente** como primera interfaz de captura.
 
-Esta versión reúne la base técnica y el diseño inicial. Las reglas operativas definitivas están pendientes de respuesta del área responsable; las funcionalidades provisionales no deben interpretarse como un proceso productivo terminado.
+Esta versión incorpora las primeras reglas confirmadas del cuestionario: usuarios con múltiples accesos y validación básica de la captura. El seguimiento de fiscalías, el cruce con RND y los reportes productivos siguen en desarrollo.
 
 ## Repositorios relacionados
 
@@ -24,9 +24,9 @@ El flujo implementado para las corporaciones permite descargar una plantilla, ca
 
 El flujo previsto para fiscalías consiste en descargar una plantilla con información de referencia y completar los campos de seguimiento ministerial. Esa segunda etapa todavía no está implementada.
 
-- **Disponible:** autenticación JWT, perfiles iniciales, alta y listado de usuarios, carga y validación de Excel, confirmación con folio, acuse y registros de operación.
+- **Disponible:** autenticación JWT, selección de acceso, alta/edición/activación de usuarios, carga y validación de Excel, confirmación con folio, acuse y registros de operación.
 - **Provisional:** pantallas de informes “Reporte primer respondiente” y “Reporte completo”, sin consultas ni indicadores definitivos.
-- **Pendiente:** catálogos y reglas definitivas, fiscalías estatales, plantilla de seguimiento, cruces automáticos, edición/baja de usuarios y reportes operativos.
+- **Pendiente:** catálogo definitivo de fiscalías, plantilla de seguimiento, cruces automáticos, control de quincenas y reportes operativos.
 
 Las futuras conexiones con SIIID e Ingesta de Datos no están implementadas. El cruce con RND/RND_FA, a partir de las copias generadas por DBBridge, también está pendiente. No existe actualmente un integrador entre estos sistemas.
 
@@ -57,9 +57,9 @@ No hay credenciales de demostración. Las cuentas se autentican contra la API y 
 | --- | --- |
 | Acceso | Autenticación JWT y sesión en memoria. Recargar o cerrar la pestaña requiere volver a ingresar. |
 | Inicio | Bienvenida y acceso a las operaciones del perfil. Se regresa desde la tarjeta del usuario. |
-| Carga de información | Plantilla, selección/arrastre XLSX, periodo declarado, errores por fila, observaciones, confirmación, folio y acuse. Disponible para primer respondiente. |
-| Informes | Submenú con “Reporte primer respondiente” y “Reporte completo”. Ambas son vistas dummy de consulta de información. |
-| Usuarios | Listado, búsqueda, contadores y panel lateral de alta. Disponible para superusuario; edición y baja no implementadas. |
+| Carga de información | Plantilla, selección/arrastre XLSX, periodo declarado, errores por fila, observaciones, confirmación, folio y acuse. Disponible para primer respondiente y superusuario; este último elige la corporación. |
+| Informes | Submenú con “Reporte primer respondiente” y “Reporte completo”. Ambas son vistas demo con datos sintéticos. El primer respondiente no tiene acceso al reporte completo ni al detalle ministerial. |
+| Usuarios | Listado de cuentas activas/inactivas, búsqueda, alta, edición y cambio de estado. Asignación de varios perfiles, instituciones y entidades. Disponible para superusuario. |
 
 La vista anterior de Entregas fue retirada de la navegación. Los endpoints de consulta y descarga siguen existiendo en la API, pero los informes del front aún no los utilizan. La API comprueba los permisos; ocultar opciones de menú no sustituye la autorización del servidor.
 
@@ -102,3 +102,11 @@ Ejecutar `npm ci` y `npm start`; abrir `http://localhost:4200/?demo=1`. Esta ent
 Los dos informes contienen 48 registros sintéticos, filtros, paginación, exportación CSV y detalle. El reporte completo separa información de corporación, RND y fiscalía, tomando los encabezados de los formatos de referencia. No contiene registros extraídos de esos archivos.
 
 La opción «Carga de demostración» permite elegir un archivo de ejemplo y recorrer una validación, observaciones y folio simulados. Si se selecciona un Excel del equipo, solo se muestra su nombre: no se leen ni envían sus bytes. El acuse descargable es un PDF de ejemplo fijo con datos ficticios, independiente de la selección en pantalla y sin validez oficial. Esta vista también está disponible desde el menú después de iniciar sesión; la carga real conserva su ruta y permisos.
+
+## Primera entrega operativa — noviembre de 2026
+
+Aplicar primero los scripts 003 y 004 de BD y actualizar la API. Las cuentas existentes se conservan. La administración obtiene instituciones y entidades de la API; no inventa fiscalías estatales. Para desactivar/reactivar una cuenta, abrir Editar y cambiar su estado.
+
+Una cuenta puede tener varios accesos. El selector «Trabajar con acceso» cambia de perfil/institución/entidad e inicia el contexto correspondiente mediante la API. Editar los accesos de una cuenta exige que vuelva a iniciar sesión; si se edita la propia cuenta, el front cierra su sesión.
+
+La carga requiere corporación, fecha, entidad y al menos folio o nombre; autoridad y fuero son opcionales. IA/AI se rechazan. Los folios de nomenclatura incorrecta generan observación para el cruce posterior. El cruce real con RND, la bandera consolidada de duplicados, los cierres de quincenas y la carga de fiscalías siguen pendientes de implementación. Los informes existentes continúan siendo una muestra visual.

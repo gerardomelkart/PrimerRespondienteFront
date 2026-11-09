@@ -14,6 +14,11 @@ export class SessionService
         return this.http.post<Sesion>('api/auth/login', { usuario, password }).pipe(tap(sesion => this.sesion.set(sesion)));
     }
 
+    cambiarAcceso(idAcceso: number)
+    {
+        return this.http.post<Sesion>('api/auth/acceso', { idAcceso }).pipe(tap(sesion => this.sesion.set(sesion)));
+    }
+
     cerrar()
     {
         this.sesion.set(null);

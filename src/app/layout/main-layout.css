@@ -163,3 +163,7 @@
         padding: 24px 16px;
     }
 }
+
+.selector-acceso { padding: 0 1rem 1rem; }
+.selector-acceso label { font-size: .8rem; }
+.selector-acceso select { width: 100%; font-size: .8rem; }

@@ -21,11 +21,21 @@
                 <span>{{ usuario.rol.replaceAll('_', ' ') }}</span>
             </div>
         </div>
+        @if(!demo() && (usuario.accesos?.length ?? 0) > 1)
+        {
+            <div class="selector-acceso">
+                <label for="accesoActual">Trabajar con acceso</label>
+                <select id="accesoActual" [ngModel]="usuario.idAcceso" (ngModelChange)="cambiarAcceso($event)" [disabled]="cambiandoAcceso()">
+                    @for(acceso of usuario.accesos; track acceso.id) { <option [ngValue]="acceso.id">{{ descripcionAcceso(acceso) }}</option> }
+                </select>
+                @if(errorAcceso()) { <p role="alert">{{ errorAcceso() }}</p> }
+            </div>
+        }
         <nav class="menu" aria-label="Principal">
             <button type="button" class="menu-link" [class.active]="pagina === 'carga-demo'" [attr.aria-current]="pagina === 'carga-demo' ? 'page' : null" (click)="navegar('carga-demo')">
                 <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Carga de demostración
             </button>
-            @if(usuario.rol === 'PRIMER_RESPONDIENTE')
+            @if((usuario.rol === 'PRIMER_RESPONDIENTE' || usuario.rol === 'SUPER_USUARIO'))
             {
                 <button type="button" class="menu-link menu-group" [attr.aria-expanded]="cargaAbierta" aria-controls="menu-carga" (click)="cargaAbierta = !cargaAbierta">
                     <i class="fa-solid fa-upload" aria-hidden="true"></i> Carga de información
@@ -50,9 +60,12 @@
                     <button type="button" class="menu-link level-2" [class.active]="pagina === 'reporte-primer-respondiente'" [attr.aria-current]="pagina === 'reporte-primer-respondiente' ? 'page' : null" (click)="navegar('reporte-primer-respondiente')">
                         <i class="fa-solid fa-file-lines" aria-hidden="true"></i> Reporte primer respondiente
                     </button>
+                    @if(usuario.rol !== 'PRIMER_RESPONDIENTE')
+                    {
                     <button type="button" class="menu-link level-2" [class.active]="pagina === 'reporte-completo'" [attr.aria-current]="pagina === 'reporte-completo' ? 'page' : null" (click)="navegar('reporte-completo')">
                         <i class="fa-solid fa-table" aria-hidden="true"></i> Reporte completo
                     </button>
+                    }
                 </div>
             }
             @if(!demo() && usuario.rol === 'SUPER_USUARIO')
@@ -85,8 +98,8 @@
             @else { <app-inicio (ir)="navegar($event)" /> }
         }
         @if(pagina === 'carga-demo') { <app-carga-demo /> }
-        @if(pagina === 'carga' && usuario.rol === 'PRIMER_RESPONDIENTE') { <app-carga /> }
-        @if(pagina === 'reporte-primer-respondiente' || pagina === 'reporte-completo')
+        @if(pagina === 'carga' && (usuario.rol === 'PRIMER_RESPONDIENTE' || usuario.rol === 'SUPER_USUARIO')) { <app-carga /> }
+        @if(pagina === 'reporte-primer-respondiente' || (pagina === 'reporte-completo' && usuario.rol !== 'PRIMER_RESPONDIENTE'))
         {
             <app-informes [completo]="pagina === 'reporte-completo'" />
         }

@@ -13,12 +13,16 @@ export class CargasService
         return this.http.get<Carga[]>(`${this.base}/cargas`);
     }
 
-    validar(archivo: File, inicio: string, fin: string)
+    validar(archivo: File, inicio: string, fin: string, institucion?: string)
     {
         const datos = new FormData();
         datos.append('archivo', archivo);
         datos.append('periodoInicio', inicio);
         datos.append('periodoFin', fin);
+        if(institucion)
+        {
+            datos.append('institucion', institucion);
+        }
         return this.http.post<Validacion>(`${this.base}/cargas/validar`, datos);
     }
 

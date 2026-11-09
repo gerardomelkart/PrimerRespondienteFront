@@ -218,3 +218,8 @@
         align-items: stretch;
     }
 }
+
+.accesos-titulo { font-size: 1rem; color: var(--guinda, #691c32); margin-top: 1.5rem; }
+.acceso-editor { padding: 1rem; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+.acceso-editor > button { margin-top: 1rem; }
+.acceso-resumen { margin-block: .3rem; min-width: 200px; }

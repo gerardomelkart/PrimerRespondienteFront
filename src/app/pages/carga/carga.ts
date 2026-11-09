@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { SessionService } from '../../core/services/session.service';
 import { CargasService } from '../../core/services/cargas.service';
-import { Carga, Validacion, Usuario } from '../../core/models/modelos';
+import { Carga, Validacion, CatalogosUsuarios } from '../../core/models/modelos';
 
 @Component({
     selector: 'app-carga',
@@ -19,6 +19,20 @@ export class CargaPage
     readonly mensaje = signal('');
     readonly validacion = signal<Validacion | null>(null);
     readonly aceptada = signal<Carga | null>(null);
+    readonly instituciones = signal<CatalogosUsuarios['instituciones']>([]);
+    institucion = '';
+
+    constructor()
+    {
+        if(this.session.sesion()?.usuario.rol === 'SUPER_USUARIO')
+        {
+            inject(HttpClient).get<CatalogosUsuarios>('api/catalogos/usuarios').subscribe({
+                next: datos => this.instituciones.set(datos.instituciones.filter(i => i.tipo === 'CORPORACION')),
+                error: error => this.error(error)
+            });
+        }
+    }
+
     inicio = '';
     fin = '';
     archivo: File | null = null;
@@ -61,6 +75,11 @@ export class CargaPage
         {
             return;
         }
+        if(this.session.sesion()?.usuario.rol === 'SUPER_USUARIO' && !this.institucion)
+        {
+            this.mensaje.set('Seleccione la corporación para esta carga.');
+            return;
+        }
         if(!this.inicio || !this.fin || this.fin < this.inicio)
         {
             this.mensaje.set('Seleccione el inicio y fin del periodo.');
@@ -70,7 +89,7 @@ export class CargaPage
         this.mensaje.set('');
         this.validacion.set(null);
         this.aceptada.set(null);
-        this.cargasService.validar(this.archivo, this.inicio, this.fin).subscribe({
+        this.cargasService.validar(this.archivo, this.inicio, this.fin, this.institucion).subscribe({
             next: resultado =>
             {
                 this.validacion.set(resultado);

@@ -1,5 +1,23 @@
+export interface AccesoUsuario
+{
+    id?: number;
+    rol: 'SUPER_USUARIO' | 'PRIMER_RESPONDIENTE' | 'FISCALIA' | 'CONSULTA';
+    institucion: string | null;
+    ambito: 'NACIONAL' | 'ESTATAL';
+    entidad: number | null;
+}
+
+export interface CatalogosUsuarios
+{
+    entidades: { id: number; nombre: string }[];
+    instituciones: { codigo: string; nombre: string; tipo: string }[];
+}
+
 export interface Usuario
 {
+    activo?: boolean;
+    idAcceso?: number;
+    accesos?: AccesoUsuario[];
     id: number;
     usuario: string;
     nombre: string;

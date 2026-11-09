@@ -5,9 +5,12 @@
 </div>
 <div class="demo-kpis">
     <section><span>Detenciones en consulta</span><strong>{{ filtrados.length }}</strong><small>Registros de demostración</small></section>
+    @if(completo())
+    {
     <section><span>En seguimiento</span><strong>{{ contar('En seguimiento') }}</strong><small>Respuesta ministerial simulada</small></section>
     <section><span>Sin respuesta</span><strong>{{ contar('Sin respuesta') }}</strong><small>Pendientes de fiscalía</small></section>
     <section><span>Concluidos</span><strong>{{ contar('Concluido') }}</strong><small>Casos ficticios concluidos</small></section>
+    }
 </div>
 <section class="tarjeta filtros-demo">
     <div class="filtros-titulo"><h2><i class="fa-solid fa-filter" aria-hidden="true"></i> Filtros de consulta</h2><button type="button" class="texto" (click)="limpiar()">Limpiar filtros</button></div>
@@ -15,7 +18,10 @@
         <div><label for="f-corporacion">Corporación</label><select id="f-corporacion" [(ngModel)]="institucion" (ngModelChange)="filtrar()"><option value="">Todas</option>@for(opcion of instituciones; track opcion) { <option>{{ opcion }}</option> }</select></div>
         <div><label for="f-entidad">Entidad</label><select id="f-entidad" [(ngModel)]="entidad" (ngModelChange)="filtrar()"><option value="">Todas</option>@for(opcion of entidades; track opcion) { <option>{{ opcion }}</option> }</select></div>
         <div><label for="f-fuero">Fuero</label><select id="f-fuero" [(ngModel)]="fuero" (ngModelChange)="filtrar()"><option value="">Todos</option><option>Común</option><option>Federal</option></select></div>
+        @if(completo())
+        {
         <div><label for="f-estado">Seguimiento</label><select id="f-estado" [(ngModel)]="estado" (ngModelChange)="filtrar()"><option value="">Todos</option><option>Sin respuesta</option><option>En seguimiento</option><option>Concluido</option></select></div>
+        }
         <div><label for="f-inicio">Detención desde</label><input id="f-inicio" type="date" [(ngModel)]="inicio" (ngModelChange)="filtrar()"></div>
         <div><label for="f-fin">Detención hasta</label><input id="f-fin" type="date" [(ngModel)]="fin" (ngModelChange)="filtrar()"></div>
         <div class="buscar-demo"><label for="f-busqueda">Buscar registro</label><input id="f-busqueda" type="search" placeholder="Folio, persona o autoridad…" [(ngModel)]="busqueda" (ngModelChange)="filtrar()"></div>
@@ -34,16 +40,16 @@
                 {
                     <tr class="grupos">@for(grupo of grupos; track grupo.nombre) { <th scope="colgroup" [attr.colspan]="grupo.columnas.length" [class]="grupo.clase">{{ grupo.nombre }}</th> }<th rowspan="2">Seguimiento</th><th rowspan="2">Detalle</th></tr>
                 }
-                <tr>@for(columna of columnas; track columna.clave) { <th scope="col" [class.campo-fiscalia]="completo() && grupos[2].columnas.includes(columna)">{{ columna.nombre }}</th> }@if(!completo()) { <th scope="col">Seguimiento</th><th scope="col">Detalle</th> }</tr>
+                <tr>@for(columna of columnas; track columna.clave) { <th scope="col" [class.campo-fiscalia]="completo() && grupos[2].columnas.includes(columna)">{{ columna.nombre }}</th> }@if(!completo()) { <th scope="col">Detalle</th> }</tr>
             </thead>
             <tbody>
                 @for(registro of visibles; track registro['id_key'])
                 {
-                    <tr>@for(columna of columnas; track columna.clave) { <td [class.campo-fiscalia]="completo() && grupos[2].columnas.includes(columna)">{{ mostrar(registro[columna.clave]) }}</td> }<td><span class="estado-demo" [class.pendiente]="registro['estado'] === 'Sin respuesta'" [class.concluido]="registro['estado'] === 'Concluido'">{{ registro['estado'] }}</span></td><td><button type="button" class="detalle-boton" [attr.aria-label]="'Ver detalle ' + registro['id_key']" (click)="ver(registro)"><i class="fa-solid fa-eye" aria-hidden="true"></i> Ver</button></td></tr>
+                    <tr>@for(columna of columnas; track columna.clave) { <td [class.campo-fiscalia]="completo() && grupos[2].columnas.includes(columna)">{{ mostrar(registro[columna.clave]) }}</td> }@if(completo()) { <td><span class="estado-demo" [class.pendiente]="registro['estado'] === 'Sin respuesta'" [class.concluido]="registro['estado'] === 'Concluido'">{{ registro['estado'] }}</span></td> }<td><button type="button" class="detalle-boton" [attr.aria-label]="'Ver detalle ' + registro['id_key']" (click)="ver(registro)"><i class="fa-solid fa-eye" aria-hidden="true"></i> Ver</button></td></tr>
                 }
                 @empty
                 {
-                    <tr><td [attr.colspan]="columnas.length + 2" class="vacio">No se encontraron registros con los filtros seleccionados.</td></tr>
+                    <tr><td [attr.colspan]="columnas.length + (completo() ? 2 : 1)" class="vacio">No se encontraron registros con los filtros seleccionados.</td></tr>
                 }
             </tbody>
         </table>
@@ -54,7 +60,7 @@
     <div class="detalle-cabecera"><div><span>REGISTRO DE DEMOSTRACIÓN</span><h2 id="detalle-titulo">{{ seleccionado?.['folio_RND'] }}</h2></div><button type="button" aria-label="Cerrar detalle" (click)="cerrar()">×</button></div>
     @if(seleccionado; as registro)
     {
-        <div class="detalle-cuerpo"><p class="muted">Datos ficticios para presentación. Sin conexión con RND o fiscalías.</p>@for(grupo of grupos; track grupo.nombre) { <section><h3 [class]="grupo.clase">{{ grupo.nombre }}</h3><dl>@for(columna of grupo.columnas; track columna.clave) { <div><dt>{{ columna.nombre }}</dt><dd>{{ mostrar(registro[columna.clave]) }}</dd></div> }</dl></section> }</div>
+        <div class="detalle-cuerpo"><p class="muted">Datos ficticios para presentación. Sin conexión con RND o fiscalías.</p>@for(grupo of (completo() ? grupos : grupos.slice(0, 2)); track grupo.nombre) { <section><h3 [class]="grupo.clase">{{ grupo.nombre }}</h3><dl>@for(columna of grupo.columnas; track columna.clave) { <div><dt>{{ columna.nombre }}</dt><dd>{{ mostrar(registro[columna.clave]) }}</dd></div> }</dl></section> }</div>
     }
     <div class="detalle-pie"><button type="button" class="primario" (click)="cerrar()">Cerrar detalle</button></div>
 </dialog>
