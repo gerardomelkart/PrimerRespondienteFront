@@ -48,7 +48,7 @@
             @if(catalogos() && !catalogos()!.periodos.length) { <p class="aviso">No hay periodos habilitados para recibir información.</p> }
         </div>
     </div>
-    <p class="nota-periodo">Todas las fechas de detención del Excel deben estar dentro de la quincena seleccionada. Las fechas fuera del periodo impiden aceptar la carga.</p>
+    <p class="nota-periodo">El periodo corresponde a la entrega; el archivo puede incluir detenciones de fechas anteriores.</p>
     <div class="arrastre" [class.arrastrando]="arrastrando" [class.con-archivo]="archivo" (dragover)="$event.preventDefault(); arrastrando = !ocupado() && !!catalogos()" (dragleave)="arrastrando = false" (drop)="soltar($event)">
         @if(archivo; as seleccionado)
         {

@@ -113,7 +113,7 @@ Se retiraron la entrada sin autenticación por parámetro de URL, los registros 
 
 La corporación del primer respondiente se muestra desde su acceso y no se puede elegir. Solo superusuario tiene selector, alimentado por la API. La validación rechaza filas de otra corporación o, para usuarios estatales, de otra entidad.
 
-El periodo se elige mediante año, mes y quincena, filtrados a partir de las quincenas habilitadas que devuelve la API. No hay calendario fijo en Angular ni campos de inicio/fin editables. Se envía idPeriodo y el servidor obtiene las fechas desde SQL. Las fechas de detención deben estar dentro de la quincena seleccionada, incluyendo sus límites. Una fecha fuera del rango impide aceptar el archivo completo, sin tolerancia de días.
+El periodo se elige mediante año, mes y quincena, filtrados a partir de las quincenas habilitadas que devuelve la API. No hay calendario fijo en Angular ni campos de inicio/fin editables. Se envía idPeriodo y el servidor obtiene las fechas desde SQL. El periodo corresponde a la entrega; las fechas de detención pueden ser anteriores, conforme a la pregunta 2 del cuestionario.
 
 Al seleccionar un archivo se muestran nombre, tamaño y estado, con acciones para cambiarlo o quitarlo. «Seleccionado» indica que está listo para validar; la recepción se acredita después de confirmar y obtener el folio.
 
