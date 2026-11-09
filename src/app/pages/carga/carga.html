@@ -20,13 +20,35 @@
             }
         </div>
         <div>
-            <label for="periodoEntrega">Periodo de entrega</label>
-            <select id="periodoEntrega" [(ngModel)]="idPeriodo" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado() || !catalogos()"><option [ngValue]="null">{{ cargandoCatalogos() ? 'Cargando periodos…' : 'Seleccione una quincena' }}</option>@for(periodo of catalogos()?.periodos; track periodo.id) { <option [ngValue]="periodo.id">{{ periodo.nombre }}</option> }</select>
+            <span class="dato-label">Periodo de entrega</span>
+            <div class="selector-periodo">
+                <div>
+                    <label for="anioEntrega">Año</label>
+                    <select id="anioEntrega" [(ngModel)]="anio" (ngModelChange)="cambiarAnio()" [disabled]="ocupado() || !anios.length">
+                        <option [ngValue]="null">{{ cargandoCatalogos() ? 'Cargando…' : 'Seleccione año' }}</option>
+                        @for(opcion of anios; track opcion) { <option [ngValue]="opcion">{{ opcion }}</option> }
+                    </select>
+                </div>
+                <div>
+                    <label for="mesEntrega">Mes</label>
+                    <select id="mesEntrega" [(ngModel)]="mes" (ngModelChange)="cambiarMes()" [disabled]="ocupado() || !anio">
+                        <option [ngValue]="null">Seleccione mes</option>
+                        @for(opcion of meses; track opcion.numero) { <option [ngValue]="opcion.numero">{{ opcion.nombre }}</option> }
+                    </select>
+                </div>
+                <div>
+                    <label for="periodoEntrega">Quincena</label>
+                    <select id="periodoEntrega" [(ngModel)]="idPeriodo" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado() || !mes">
+                        <option [ngValue]="null">Seleccione quincena</option>
+                        @for(periodo of quincenas; track periodo.id) { <option [ngValue]="periodo.id">{{ periodo.inicio.slice(8, 10) === '01' ? 'Primera quincena' : 'Segunda quincena' }}</option> }
+                    </select>
+                </div>
+            </div>
             @if(periodoSeleccionado; as periodo) { <small class="muted">{{ periodo.inicio | date:'dd/MM/yyyy' }} al {{ periodo.fin | date:'dd/MM/yyyy' }}</small> }
             @if(catalogos() && !catalogos()!.periodos.length) { <p class="aviso">No hay periodos habilitados para recibir información.</p> }
         </div>
     </div>
-    <p class="nota-periodo">El periodo corresponde a la entrega; el archivo puede incluir detenciones de fechas anteriores.</p>
+    <p class="nota-periodo">Todas las fechas de detención del Excel deben estar dentro de la quincena seleccionada. Las fechas fuera del periodo impiden aceptar la carga.</p>
     <div class="arrastre" [class.arrastrando]="arrastrando" [class.con-archivo]="archivo" (dragover)="$event.preventDefault(); arrastrando = !ocupado() && !!catalogos()" (dragleave)="arrastrando = false" (drop)="soltar($event)">
         @if(archivo; as seleccionado)
         {

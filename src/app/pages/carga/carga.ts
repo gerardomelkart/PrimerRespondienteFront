@@ -49,7 +49,40 @@ export class CargaPage
         }
     }
 
+    anio: number | null = null;
+    mes: number | null = null;
     idPeriodo: number | null = null;
+
+    get anios()
+    {
+        return [...new Set(this.catalogos()?.periodos.map(p => Number(p.inicio.slice(0, 4))) ?? [])].sort((a, b) => b - a);
+    }
+
+    get meses()
+    {
+        const numeros = [...new Set(this.catalogos()?.periodos
+            .filter(p => Number(p.inicio.slice(0, 4)) === this.anio)
+            .map(p => Number(p.inicio.slice(5, 7))) ?? [])].sort((a, b) => a - b);
+        return numeros.map(numero => ({ numero, nombre: new Intl.DateTimeFormat('es-MX', { month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(this.anio!, numero - 1, 1))) }));
+    }
+
+    get quincenas()
+    {
+        return this.catalogos()?.periodos.filter(p => Number(p.inicio.slice(0, 4)) === this.anio
+            && Number(p.inicio.slice(5, 7)) === this.mes).sort((a, b) => a.inicio.localeCompare(b.inicio)) ?? [];
+    }
+
+    cambiarAnio()
+    {
+        this.mes = null;
+        this.cambiarMes();
+    }
+
+    cambiarMes()
+    {
+        this.idPeriodo = null;
+        this.cambiarPeriodo();
+    }
 
     get periodoSeleccionado()
     {

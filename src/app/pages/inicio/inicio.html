@@ -1,13 +1,60 @@
-<span class="etiqueta">EFICIENCIA MINISTERIAL</span>
-<h1>Bienvenido, {{ session.sesion()!.usuario.nombre }}</h1>
-<p class="muted">Primer Respondiente · {{ session.sesion()!.usuario.institucion || 'Administración nacional' }}</p>
-<section class="tarjeta inicio-accion">
-    <div>
-        <h2>{{ (session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE' || session.sesion()!.usuario.rol === 'SUPER_USUARIO') ? 'Carga de información' : 'Consulta de información' }}</h2>
-        <p class="muted">Selecciona una opción de la barra de navegación para continuar.</p>
+<section class="bienvenida" aria-labelledby="titulo-bienvenida">
+    <div class="bienvenida-contenido">
+        <span class="bienvenida-etiqueta">EFICIENCIA MINISTERIAL</span>
+        <h1 id="titulo-bienvenida">Información que conecta<br>el primer paso con la justicia.</h1>
+        <p class="bienvenida-descripcion">Un espacio para integrar información de detenciones y dar seguimiento a la actuación ministerial.</p>
+        @if(puedeCargar)
+        {
+            <button type="button" class="bienvenida-boton" (click)="ir.emit('carga')">Cargar información <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+        }
+        @else
+        {
+            <button type="button" class="bienvenida-boton" (click)="ir.emit('reporte-primer-respondiente')">Ir a informes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+        }
     </div>
-    @if((session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE' || session.sesion()!.usuario.rol === 'SUPER_USUARIO'))
-    {
-        <button type="button" class="primario" (click)="ir.emit('carga')"><i class="fa-solid fa-upload" aria-hidden="true"></i> Integrar información</button>
-    }
+    <aside class="acceso-actual" aria-label="Acceso actual">
+        <span class="acceso-linea"></span>
+        <span class="acceso-etiqueta">TU ESPACIO DE TRABAJO</span>
+        <h2>{{ session.sesion()!.usuario.nombre }}</h2>
+        <p>{{ session.sesion()!.usuario.institucion || 'Eficiencia Ministerial' }}</p>
+        <dl>
+            <div><dt>Perfil</dt><dd>{{ session.sesion()!.usuario.rol.replaceAll('_', ' ') }}</dd></div>
+            <div><dt>Alcance</dt><dd>{{ session.sesion()!.usuario.ambito === 'NACIONAL' ? 'Nacional' : 'Estatal · Entidad ' + session.sesion()!.usuario.entidad }}</dd></div>
+        </dl>
+        <span class="acceso-nota"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Acceso institucional</span>
+    </aside>
+</section>
+<section class="herramientas" aria-labelledby="titulo-herramientas">
+    <div class="herramientas-titulo"><div><span class="etiqueta">PRIMER RESPONDIENTE</span><h2 id="titulo-herramientas">¿Qué necesitas hacer?</h2></div><p>Las opciones corresponden a tu acceso actual.</p></div>
+    <div class="accesos-grid">
+        @if(puedeCargar)
+        {
+            <button type="button" class="acceso-tarjeta" (click)="ir.emit('carga')">
+                <span class="acceso-icono"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i></span>
+                <strong>Integrar detenciones</strong><span>Selecciona la quincena, carga el Excel y revisa la validación de tu entrega.</span>
+                <span class="acceso-enlace">Ir a carga <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </button>
+        }
+        <button type="button" class="acceso-tarjeta" (click)="ir.emit('reporte-primer-respondiente')">
+            <span class="acceso-icono"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span>
+            <strong>Informes</strong><span>Accede al espacio de consulta de información de Primer Respondiente.</span>
+            <span class="acceso-enlace">Ver informes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+        </button>
+        @if(session.sesion()!.usuario.rol === 'SUPER_USUARIO')
+        {
+            <button type="button" class="acceso-tarjeta" (click)="ir.emit('usuarios')">
+                <span class="acceso-icono"><i class="fa-solid fa-users-gear" aria-hidden="true"></i></span>
+                <strong>Administrar usuarios</strong><span>Gestiona las cuentas y sus accesos por institución y ámbito de trabajo.</span>
+                <span class="acceso-enlace">Gestionar accesos <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </button>
+        }
+        @else if(session.sesion()!.usuario.rol !== 'PRIMER_RESPONDIENTE')
+        {
+            <button type="button" class="acceso-tarjeta" (click)="ir.emit('reporte-completo')">
+                <span class="acceso-icono"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></span>
+                <strong>Reporte completo</strong><span>Accede al espacio de seguimiento ministerial según el alcance de tu cuenta.</span>
+                <span class="acceso-enlace">Ir al reporte <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </button>
+        }
+    </div>
 </section>

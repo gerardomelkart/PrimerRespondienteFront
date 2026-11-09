@@ -1,0 +1,45 @@
+:host { display: block; }
+.bienvenida { position: relative; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr); gap: 48px; padding: 48px; overflow: hidden; border-radius: 16px; background: var(--siiid-guinda-dark); color: #fff; }
+.bienvenida::before { content: ''; position: absolute; width: 530px; height: 530px; border: 1px solid #ffffff12; border-radius: 50%; right: -210px; top: -180px; box-shadow: 0 0 0 60px #ffffff04, 0 0 0 120px #ffffff03; pointer-events: none; }
+.bienvenida-contenido, .acceso-actual { position: relative; }
+.bienvenida-etiqueta { display: block; color: #e0c594; letter-spacing: 2.4px; font-size: 11px; font-weight: 700; margin-bottom: 24px; }
+.bienvenida h1 { max-width: 720px; font-size: clamp(27px, 2.7vw, 42px); line-height: 1.22; font-weight: 700; letter-spacing: -.7px; margin: 0; color: #fff; }
+.bienvenida-descripcion { max-width: 520px; margin: 22px 0 28px; color: #ede1e5; font-size: 15px; line-height: 1.8; }
+.bienvenida-boton { display: inline-flex; align-items: center; gap: 28px; padding: 14px 20px; border: 1px solid #d6b57e; border-radius: 6px; background: #e1c597; color: #3b1924; font-weight: 700; }
+.bienvenida-boton:hover { background: #eed9b6; }
+.acceso-actual { align-self: center; padding: 28px; border: 1px solid #ffffff26; border-radius: 10px; background: #ffffff09; min-width: 0; }
+.acceso-linea { display: block; width: 32px; height: 3px; background: var(--siiid-dorado); margin-bottom: 22px; }
+.acceso-etiqueta { font-size: 10px; letter-spacing: 1.7px; color: #e0c594; font-weight: 700; }
+.acceso-actual h2 { margin: 12px 0 6px; color: #fff; font-size: 24px; overflow-wrap: anywhere; }
+.acceso-actual p { font-size: 13px; color: #e8dce0; line-height: 1.6; }
+.acceso-actual dl { margin: 22px 0; display: grid; gap: 13px; }
+.acceso-actual dl > div { display: flex; justify-content: space-between; gap: 18px; }
+.acceso-actual dt { color: #d1bec5; font-weight: 400; font-size: 12px; }
+.acceso-actual dd { margin: 0; color: #fff; font-size: 12px; text-align: right; overflow-wrap: anywhere; }
+.acceso-nota { display: flex; gap: 9px; align-items: center; padding-top: 18px; border-top: 1px solid #ffffff22; color: #e0c594; font-size: 11px; }
+.herramientas { margin-top: 38px; }
+.herramientas-titulo { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 20px; }
+.herramientas-titulo h2 { font-size: 23px; margin: 8px 0 0; }
+.herramientas-titulo p { color: #6c757d; font-size: 12px; margin: 0 0 4px; }
+.accesos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 20px; }
+.acceso-tarjeta { display: flex; flex-direction: column; align-items: start; text-align: left; gap: 14px; padding: 26px; border: 1px solid var(--em-borde); border-radius: 10px; background: #fff; color: var(--siiid-text); box-shadow: var(--em-sombra); transition: border-color .15s, transform .15s; }
+.acceso-tarjeta:hover { border-color: var(--siiid-dorado); transform: translateY(-3px); }
+.acceso-icono { display: grid; place-items: center; width: 44px; height: 44px; background: #f7f1e8; color: #866232; border-radius: 10px; font-size: 19px; }
+.acceso-tarjeta > strong { font-size: 18px; }
+.acceso-tarjeta > span:not(.acceso-icono):not(.acceso-enlace) { font-size: 13px; line-height: 1.8; color: #626b78; font-weight: 400; }
+.acceso-tarjeta .acceso-enlace { display: flex; align-items: center; gap: 14px; color: var(--siiid-guinda); font-size: 12px; font-weight: 700; margin-top: auto; padding-top: 10px; }
+@media(max-width: 900px)
+{
+    .bienvenida { gap: 28px; padding: 30px; grid-template-columns: minmax(0, 1.4fr) minmax(240px, 1fr); }
+}
+@media(max-width: 650px)
+{
+    .bienvenida { grid-template-columns: minmax(0, 1fr); padding: 26px 22px; gap: 28px; }
+    .acceso-actual { padding: 22px; }
+    .herramientas-titulo { align-items: start; flex-direction: column; gap: 12px; }
+}
+@media(prefers-reduced-motion: reduce)
+{
+    .acceso-tarjeta { transition: none; }
+    .acceso-tarjeta:hover { transform: none; }
+}

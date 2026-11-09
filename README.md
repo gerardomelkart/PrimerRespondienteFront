@@ -113,8 +113,12 @@ Se retiraron la entrada sin autenticación por parámetro de URL, los registros 
 
 La corporación del primer respondiente se muestra desde su acceso y no se puede elegir. Solo superusuario tiene selector, alimentado por la API. La validación rechaza filas de otra corporación o, para usuarios estatales, de otra entidad.
 
-El periodo se elige entre las quincenas habilitadas que devuelve la API. No hay calendario fijo en Angular ni campos de inicio/fin editables. Se envía idPeriodo y el servidor obtiene las fechas desde SQL. Las fechas de detención pueden ser anteriores a la entrega.
+El periodo se elige mediante año, mes y quincena, filtrados a partir de las quincenas habilitadas que devuelve la API. No hay calendario fijo en Angular ni campos de inicio/fin editables. Se envía idPeriodo y el servidor obtiene las fechas desde SQL. Las fechas de detención deben estar dentro de la quincena seleccionada, incluyendo sus límites. Una fecha fuera del rango impide aceptar el archivo completo, sin tolerancia de días.
 
 Al seleccionar un archivo se muestran nombre, tamaño y estado, con acciones para cambiarlo o quitarlo. «Seleccionado» indica que está listo para validar; la recepción se acredita después de confirmar y obtener el folio.
 
 Los perfiles, ámbitos, entidades, instituciones, periodos y límites que se muestran se obtienen de API/BD. Se retiraron las dependencias sin uso @angular/router y sweetalert2. Después del pull ejecutar npm ci, actualizar la API y aplicar la migración 005.
+
+## Bienvenida
+
+La página inicial presenta el acceso actual y accesos directos según el perfil. No muestra indicadores ni cifras ficticias. La navegación y los permisos de los módulos se conservan; los informes continúan en preparación.

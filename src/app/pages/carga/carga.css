@@ -1,5 +1,5 @@
 :host { display: block; }
-.datos-entrega { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 16px; }
+.datos-entrega { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(0, 2fr); gap: 24px; margin-bottom: 16px; }
 .datos-entrega label, .dato-label { display: block; margin: 14px 0 8px; font-size: 13px; font-weight: 700; }
 .dato-valor { display: block; padding: 12px 0; color: var(--siiid-guinda); font-size: 16px; }
 .datos-entrega small { display: block; margin-top: 6px; }
@@ -17,4 +17,17 @@
     .datos-entrega { grid-template-columns: minmax(0, 1fr); gap: 0; }
     .archivo-seleccionado { gap: 12px; }
     .archivo-icono { font-size: 30px; }
+}
+
+.selector-periodo { display: grid; grid-template-columns: minmax(100px, .8fr) minmax(120px, 1fr) minmax(170px, 1.3fr); gap: 12px; }
+.selector-periodo label { margin-top: 0; font-size: 12px; color: #596273; }
+.selector-periodo select { width: 100%; min-width: 0; }
+@media(max-width: 900px)
+{
+    .datos-entrega { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+@media(max-width: 500px)
+{
+    .selector-periodo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .selector-periodo > div:last-child { grid-column: 1 / -1; }
 }
