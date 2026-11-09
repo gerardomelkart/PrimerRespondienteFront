@@ -122,3 +122,7 @@ Los perfiles, ámbitos, entidades, instituciones, periodos y límites que se mue
 ## Bienvenida
 
 La página inicial presenta el acceso actual y accesos directos según el perfil. No muestra indicadores ni cifras ficticias. La navegación y los permisos de los módulos se conservan; los informes continúan en preparación.
+
+## Resultados de validación
+
+Los errores y observaciones se muestran juntos en una tabla de 20 filas por página, ordenada por fila del Excel. Los mensajes generales aparecen sin número de fila. La descarga genera un XLSX con todos los resultados, independientemente de la página visible; se requiere la versión correspondiente de la API. Esto no ejecuta el cruce con RND, que permanece pendiente.

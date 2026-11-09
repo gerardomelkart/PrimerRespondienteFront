@@ -71,11 +71,26 @@
 @if(validacion(); as resultado)
 {
     <section id="resultado" class="tarjeta resultado" aria-live="polite">
-        <h2>{{ resultado.valido ? 'Archivo validado' : 'Revisa los errores del archivo' }}</h2><p>{{ resultado.totalRegistros }} registros válidos. {{ resultado.errores.length }} errores.</p>
-        @if(resultado.avisos.length) { <div class="aviso"><strong>Observaciones</strong>@for(aviso of resultado.avisos; track $index) { <p>{{ aviso }}</p> }</div> }
-        @if(resultado.errores.length)
+        <div class="resultado-cabecera">
+            <div><h2>{{ resultado.valido ? 'Archivo validado' : 'Revisa los errores del archivo' }}</h2><p>{{ resultado.totalRegistros | number }} registros válidos · {{ resultado.errores.length | number }} errores · {{ resultado.avisos.length | number }} observaciones</p></div>
+            @if(incidencias().length)
+            {
+                <button type="button" class="secundario" (click)="exportarValidacion()" [disabled]="exportando()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> {{ exportando() ? 'Generando Excel…' : 'Descargar resultados en Excel' }}</button>
+            }
+        </div>
+        @if(incidencias().length)
         {
-            <div class="tabla-scroll"><table><thead><tr><th>Fila</th><th>Campo</th><th>Error</th></tr></thead><tbody>@for(error of resultado.errores; track $index) { <tr><td>{{ error.fila }}</td><td>{{ error.campo }}</td><td>{{ error.mensaje }}</td></tr> }</tbody></table></div>
+            <div class="tabla-scroll"><table class="tabla-validacion"><caption class="visually-hidden">Errores y observaciones de la validación</caption><thead><tr><th scope="col">Tipo</th><th scope="col">Fila del Excel</th><th scope="col">Campo</th><th scope="col">Detalle</th></tr></thead><tbody>
+                @for(incidencia of incidenciasPagina; track $index)
+                {
+                    <tr><td><span class="tipo-incidencia" [class.es-error]="incidencia.tipo === 'Error'">{{ incidencia.tipo }}</span></td><td>{{ incidencia.fila ?? 'General' }}</td><td>{{ incidencia.campo || '—' }}</td><td>{{ incidencia.mensaje }}</td></tr>
+                }
+            </tbody></table></div>
+            <nav class="paginacion-resultados" aria-label="Páginas del resultado de validación">
+                <span>{{ incidencias().length | number }} resultados · Página {{ paginaResultado }} de {{ totalPaginas }}</span>
+                <div><button type="button" class="secundario" (click)="paginaResultado = paginaResultado - 1" [disabled]="paginaResultado === 1">Anterior</button><button type="button" class="secundario" (click)="paginaResultado = paginaResultado + 1" [disabled]="paginaResultado === totalPaginas">Siguiente</button></div>
+            </nav>
+            <p class="nota-periodo">El Excel incluye todos los errores y observaciones, de todas las páginas.</p>
         }
         @if(resultado.valido) { <p>Al confirmar se registrará la entrega y se generará su folio.</p><button type="button" class="primario" (click)="confirmar()" [disabled]="ocupado()">Confirmar entrega</button> }
     </section>

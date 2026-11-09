@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Carga, Validacion, CatalogosCarga } from '../models/modelos';
+import { Carga, Validacion, CatalogosCarga, IncidenciaValidacion } from '../models/modelos';
 
 @Injectable({ providedIn: 'root' })
 export class CargasService
@@ -23,6 +23,11 @@ export class CargasService
             datos.append('institucion', institucion);
         }
         return this.http.post<Validacion>(`${this.base}/cargas/validar`, datos);
+    }
+
+    exportarValidacion(filas: IncidenciaValidacion[])
+    {
+        return this.http.post(`${this.base}/cargas/validacion/excel`, { filas }, { responseType: 'blob' });
     }
 
     confirmar(idCarga: string)

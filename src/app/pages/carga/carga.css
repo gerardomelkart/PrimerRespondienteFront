@@ -45,3 +45,18 @@
 {
     .arrastre { transition: none; }
 }
+
+.resultado-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+.resultado-cabecera p { color: #626b78; font-size: 13px; margin-bottom: 0; }
+.resultado-cabecera button { flex-shrink: 0; }
+.tabla-validacion th, .tabla-validacion td { vertical-align: top; }
+.tabla-validacion td:last-child { min-width: 240px; overflow-wrap: anywhere; }
+.tipo-incidencia { display: inline-block; white-space: nowrap; border-radius: 4px; padding: 4px 8px; background: #fff3d9; color: #735416; font-size: 11px; font-weight: 700; }
+.tipo-incidencia.es-error { background: #f9e9ec; color: #8a1834; }
+.paginacion-resultados { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }
+.paginacion-resultados > span { color: #626b78; font-size: 12px; }
+.paginacion-resultados > div { display: flex; gap: 8px; }
+@media(max-width: 650px)
+{
+    .resultado-cabecera, .paginacion-resultados { flex-direction: column; align-items: flex-start; }
+}

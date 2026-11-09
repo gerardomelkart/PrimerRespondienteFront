@@ -1,10 +1,10 @@
-import { Component, ElementRef, ViewChild, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { SessionService } from '../../core/services/session.service';
 import { CargasService } from '../../core/services/cargas.service';
-import { Carga, Validacion, CatalogosUsuarios, CatalogosCarga } from '../../core/models/modelos';
+import { Carga, Validacion, CatalogosUsuarios, CatalogosCarga, IncidenciaValidacion } from '../../core/models/modelos';
 
 @Component({
     selector: 'app-carga',
@@ -19,6 +19,36 @@ export class CargaPage
     readonly ocupado = signal(false);
     readonly mensaje = signal('');
     readonly validacion = signal<Validacion | null>(null);
+    paginaResultado = 1;
+    readonly filasPorPagina = 20;
+    readonly exportando = signal(false);
+    readonly incidencias = computed<IncidenciaValidacion[]>(() =>
+    {
+        const resultado = this.validacion();
+        if(!resultado)
+        {
+            return [];
+        }
+        const errores = resultado.errores.map(e => ({ tipo: 'Error', fila: e.fila || null, campo: e.campo, mensaje: e.mensaje }));
+        const avisos = resultado.avisos.map(aviso =>
+        {
+            const partes = /^Fila (\d+):\s*(.*)$/.exec(aviso);
+            return { tipo: 'Observación', fila: partes ? Number(partes[1]) : null, campo: '', mensaje: partes ? partes[2] : aviso };
+        });
+        return [...errores, ...avisos].sort((a, b) => (a.fila ?? Number.MAX_SAFE_INTEGER) - (b.fila ?? Number.MAX_SAFE_INTEGER));
+    });
+
+    get totalPaginas()
+    {
+        return Math.max(1, Math.ceil(this.incidencias().length / this.filasPorPagina));
+    }
+
+    get incidenciasPagina()
+    {
+        const inicio = (this.paginaResultado - 1) * this.filasPorPagina;
+        return this.incidencias().slice(inicio, inicio + this.filasPorPagina);
+    }
+
     readonly aceptada = signal<Carga | null>(null);
     @ViewChild('selectorArchivo') private selectorArchivo?: ElementRef<HTMLInputElement>;
     readonly catalogos = signal<CatalogosCarga | null>(null);
@@ -163,6 +193,7 @@ export class CargaPage
         this.cargasService.validar(this.archivo, this.idPeriodo!, this.institucion).subscribe({
             next: resultado =>
             {
+                this.paginaResultado = 1;
                 this.validacion.set(resultado);
                 this.ocupado.set(false);
                 setTimeout(() => document.getElementById('resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -188,17 +219,43 @@ export class CargaPage
             error: error => this.error(error)
         });
     }
+    exportarValidacion()
+    {
+        if(this.exportando() || !this.incidencias().length)
+        {
+            return;
+        }
+        this.exportando.set(true);
+        this.cargasService.exportarValidacion(this.incidencias()).subscribe({
+            next: blob =>
+            {
+                this.guardarDescarga(blob, 'Resultado_validacion.xlsx');
+                this.exportando.set(false);
+            },
+            error: error =>
+            {
+                this.exportando.set(false);
+                this.error(error);
+            }
+        });
+    }
+
+    private guardarDescarga(blob: Blob, nombre: string)
+    {
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = nombre;
+        enlace.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
     descargar(ruta: string, nombre: string)
     {
         this.cargasService.descargar(ruta).subscribe({
             next: blob =>
             {
-                const url = URL.createObjectURL(blob);
-                const enlace = document.createElement('a');
-                enlace.href = url;
-                enlace.download = nombre;
-                enlace.click();
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                this.guardarDescarga(blob, nombre);
             },
             error: error => this.error(error)
         });

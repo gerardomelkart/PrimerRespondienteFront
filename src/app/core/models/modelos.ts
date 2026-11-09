@@ -73,3 +73,11 @@ export interface Validacion
     errores: { fila: number; campo: string; mensaje: string }[];
     avisos: string[];
 }
+
+export interface IncidenciaValidacion
+{
+    tipo: string;
+    fila: number | null;
+    campo: string;
+    mensaje: string;
+}
