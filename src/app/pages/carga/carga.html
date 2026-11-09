@@ -1,32 +1,64 @@
 @if(mensaje()) { <p class="aviso" role="alert">{{ mensaje() }}</p> }
-
-                <div class="titulo"><div><span class="etiqueta">RECEPCIÓN DE INFORMACIÓN</span><h1>Cargar detenciones</h1><p class="muted">Valida tu archivo antes de confirmar la entrega.</p></div><button class="secundario" (click)="descargar('plantilla', 'Plantilla_PrimerRespondiente.xlsx')"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button></div>
-                <div class="progreso"><span [class.actual]="!validacion() && !aceptada()">1. Seleccionar archivo</span><span [class.actual]="validacion()">2. Revisar validación</span><span [class.actual]="aceptada()">3. Folio y acuse</span></div>
-                <section class="tarjeta">
-                    <h2>Archivo de {{ session.sesion()!.usuario.institucion || 'corporación' }}</h2>
-                    @if(session.sesion()!.usuario.rol === 'SUPER_USUARIO')
-                    {
-                        <div><label for="corporacionCarga">Corporación</label><select id="corporacionCarga" [(ngModel)]="institucion" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado()"><option value="">Seleccione una corporación</option>@for(opcion of instituciones(); track opcion.codigo) { <option [value]="opcion.codigo">{{ opcion.nombre }}</option> }</select></div>
-                    }
-                    <div class="campos-periodo"><div><label for="inicio">Inicio del periodo</label><input id="inicio" type="date" [(ngModel)]="inicio" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado()"></div><div><label for="fin">Fin del periodo</label><input id="fin" type="date" [(ngModel)]="fin" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado()"></div></div>
-                    <div class="arrastre" [class.arrastrando]="arrastrando" (dragover)="$event.preventDefault(); arrastrando = true" (dragleave)="arrastrando = false" (drop)="soltar($event)">
-                        <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i><strong>{{ archivo?.name || 'Arrastra aquí tu archivo Excel' }}</strong><span>Formato .xlsx · Hasta 10 MB · Hasta 20,000 registros</span><label class="secundario selector" for="archivo">Seleccionar archivo</label><input id="archivo" class="visually-hidden" type="file" accept=".xlsx" (change)="seleccionar($event)" [disabled]="ocupado()">
-                    </div>
-                    <div class="acciones"><button class="primario" (click)="validar()" [disabled]="!archivo || ocupado()">{{ ocupado() ? 'Procesando…' : 'Validar archivo' }}</button></div>
-                </section>
-                @if(validacion(); as resultado)
-                {
-                    <section id="resultado" class="tarjeta resultado" aria-live="polite">
-                        <h2>{{ resultado.valido ? 'Archivo validado' : 'Revisa los errores del archivo' }}</h2><p>{{ resultado.totalRegistros }} registros válidos. {{ resultado.errores.length }} errores.</p>
-                        @if(resultado.avisos.length) { <div class="aviso"><strong>Observaciones</strong>@for(aviso of resultado.avisos; track $index) { <p>{{ aviso }}</p> }</div> }
-                        @if(resultado.errores.length)
-                        {
-                            <div class="tabla-scroll"><table><thead><tr><th>Fila</th><th>Campo</th><th>Error</th></tr></thead><tbody>@for(error of resultado.errores; track $index) { <tr><td>{{ error.fila }}</td><td>{{ error.campo }}</td><td>{{ error.mensaje }}</td></tr> }</tbody></table></div>
-                        }
-                        @if(resultado.valido) { <p>Al confirmar se registrará la entrega y se generará su folio.</p><button class="primario" (click)="confirmar()" [disabled]="ocupado()">Confirmar entrega</button> }
-                    </section>
-                }
-                @if(aceptada(); as carga)
-                {
-                    <section class="tarjeta confirmacion" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><h2>Entrega recibida</h2><p>Folio de entrega</p><strong class="folio">{{ carga.folio }}</strong><p>{{ carga.totalRegistros }} registros aceptados</p><button class="primario" (click)="descargar('cargas/' + carga.id + '/acuse', 'Acuse_' + carga.folio + '.html')">Descargar acuse</button></section>
-                }
+<div class="titulo">
+    <div><span class="etiqueta">RECEPCIÓN DE INFORMACIÓN</span><h1>Cargar detenciones</h1><p class="muted">Selecciona tu periodo y valida el archivo antes de confirmar la entrega.</p></div>
+    <button type="button" class="secundario" (click)="descargar('plantilla', 'Plantilla_PrimerRespondiente.xlsx')"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button>
+</div>
+<div class="progreso"><span [class.actual]="!validacion() && !aceptada()">1. Seleccionar archivo</span><span [class.actual]="validacion()">2. Revisar validación</span><span [class.actual]="aceptada()">3. Folio y acuse</span></div>
+<section class="tarjeta">
+    <h2>Datos de la entrega</h2>
+    <div class="datos-entrega">
+        <div>
+            @if(session.sesion()!.usuario.rol === 'SUPER_USUARIO')
+            {
+                <label for="corporacionCarga">Corporación</label>
+                <select id="corporacionCarga" [(ngModel)]="institucion" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado()"><option value="">Seleccione una corporación</option>@for(opcion of instituciones(); track opcion.codigo) { <option [value]="opcion.codigo">{{ opcion.nombre }}</option> }</select>
+            }
+            @else
+            {
+                <span class="dato-label">Corporación asignada</span><strong class="dato-valor">{{ session.sesion()!.usuario.institucion }}</strong>
+                @if(session.sesion()!.usuario.ambito === 'ESTATAL') { <small class="muted">La carga se limita a la entidad de tu acceso.</small> }
+            }
+        </div>
+        <div>
+            <label for="periodoEntrega">Periodo de entrega</label>
+            <select id="periodoEntrega" [(ngModel)]="idPeriodo" (ngModelChange)="cambiarPeriodo()" [disabled]="ocupado() || !catalogos()"><option [ngValue]="null">{{ cargandoCatalogos() ? 'Cargando periodos…' : 'Seleccione una quincena' }}</option>@for(periodo of catalogos()?.periodos; track periodo.id) { <option [ngValue]="periodo.id">{{ periodo.nombre }}</option> }</select>
+            @if(periodoSeleccionado; as periodo) { <small class="muted">{{ periodo.inicio | date:'dd/MM/yyyy' }} al {{ periodo.fin | date:'dd/MM/yyyy' }}</small> }
+            @if(catalogos() && !catalogos()!.periodos.length) { <p class="aviso">No hay periodos habilitados para recibir información.</p> }
+        </div>
+    </div>
+    <p class="nota-periodo">El periodo corresponde a la entrega; el archivo puede incluir detenciones de fechas anteriores.</p>
+    <div class="arrastre" [class.arrastrando]="arrastrando" [class.con-archivo]="archivo" (dragover)="$event.preventDefault(); arrastrando = !ocupado() && !!catalogos()" (dragleave)="arrastrando = false" (drop)="soltar($event)">
+        @if(archivo; as seleccionado)
+        {
+            <div class="archivo-seleccionado" role="status">
+                <i class="fa-solid fa-file-excel archivo-icono" aria-hidden="true"></i>
+                <div><span class="archivo-estado"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Archivo seleccionado</span><strong>{{ seleccionado.name }}</strong><small>{{ seleccionado.size / 1024 | number:'1.0-1' }} KB · Listo para validar</small></div>
+                <button type="button" class="quitar-archivo" aria-label="Quitar archivo seleccionado" (click)="quitarArchivo()" [disabled]="ocupado()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            </div>
+        }
+        @else
+        {
+            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i><strong>Arrastra aquí tu archivo Excel</strong>
+        }
+        @if(catalogos(); as datos) { <span>Formato .xlsx · Hasta {{ datos.limites.maximoBytes / 1000000 | number:'1.0-1' }} MB · Hasta {{ datos.limites.maximoFilas | number }} registros</span> }
+        <button type="button" class="secundario" (click)="selectorArchivo.click()" [disabled]="ocupado() || !catalogos()">{{ archivo ? 'Cambiar archivo' : 'Seleccionar archivo' }}</button>
+        <input #selectorArchivo class="visually-hidden" type="file" aria-label="Archivo Excel de detenciones" accept=".xlsx" (change)="seleccionar($event)" [disabled]="ocupado() || !catalogos()">
+    </div>
+    <div class="acciones"><button type="button" class="primario" (click)="validar()" [disabled]="!archivo || !idPeriodo || ocupado() || !catalogos()">{{ ocupado() ? 'Procesando…' : 'Validar archivo' }}</button></div>
+</section>
+@if(validacion(); as resultado)
+{
+    <section id="resultado" class="tarjeta resultado" aria-live="polite">
+        <h2>{{ resultado.valido ? 'Archivo validado' : 'Revisa los errores del archivo' }}</h2><p>{{ resultado.totalRegistros }} registros válidos. {{ resultado.errores.length }} errores.</p>
+        @if(resultado.avisos.length) { <div class="aviso"><strong>Observaciones</strong>@for(aviso of resultado.avisos; track $index) { <p>{{ aviso }}</p> }</div> }
+        @if(resultado.errores.length)
+        {
+            <div class="tabla-scroll"><table><thead><tr><th>Fila</th><th>Campo</th><th>Error</th></tr></thead><tbody>@for(error of resultado.errores; track $index) { <tr><td>{{ error.fila }}</td><td>{{ error.campo }}</td><td>{{ error.mensaje }}</td></tr> }</tbody></table></div>
+        }
+        @if(resultado.valido) { <p>Al confirmar se registrará la entrega y se generará su folio.</p><button type="button" class="primario" (click)="confirmar()" [disabled]="ocupado()">Confirmar entrega</button> }
+    </section>
+}
+@if(aceptada(); as carga)
+{
+    <section class="tarjeta confirmacion" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><h2>Entrega recibida</h2><p>Folio de entrega</p><strong class="folio">{{ carga.folio }}</strong><p>{{ carga.totalRegistros }} registros aceptados</p><button type="button" class="primario" (click)="descargar('cargas/' + carga.id + '/acuse', 'Acuse_' + carga.folio + '.html')">Descargar acuse</button></section>
+}

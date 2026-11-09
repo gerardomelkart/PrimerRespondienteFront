@@ -87,15 +87,15 @@
                 {
                     <section class="acceso-editor">
                         <div class="form-grid">
-                            <div class="span-2"><label [for]="'rol' + i">Perfil *</label><select [id]="'rol' + i" [name]="'rol' + i" [(ngModel)]="acceso.rol" (ngModelChange)="cambiarPerfil(acceso)">@for(perfil of perfiles; track perfil.valor) { <option [value]="perfil.valor">{{ perfil.nombre }}</option> }</select></div>
+                            <div class="span-2"><label [for]="'rol' + i">Perfil *</label><select [id]="'rol' + i" [name]="'rol' + i" [(ngModel)]="acceso.rol" required (ngModelChange)="cambiarPerfil(acceso)"><option value="">Seleccione un perfil</option>@for(perfil of perfiles; track perfil.codigo) { <option [value]="perfil.codigo">{{ perfil.nombre }}</option> }</select></div>
                             @if(acceso.rol !== 'SUPER_USUARIO')
                             {
-                                <div class="span-2"><label [for]="'institucion' + i">Institución</label><select [id]="'institucion' + i" [name]="'institucion' + i" [(ngModel)]="acceso.institucion" [required]="acceso.rol === 'PRIMER_RESPONDIENTE' || acceso.rol === 'FISCALIA'">
+                                <div class="span-2"><label [for]="'institucion' + i">Institución</label><select [id]="'institucion' + i" [name]="'institucion' + i" [(ngModel)]="acceso.institucion" [required]="perfil(acceso)?.requiereInstitucion ?? false" [disabled]="!acceso.rol">
                                     <option [ngValue]="null">{{ acceso.rol === 'CONSULTA' ? 'Todas las instituciones' : 'Seleccione una institución' }}</option>
                                     @for(institucion of instituciones(acceso); track institucion.codigo) { <option [value]="institucion.codigo">{{ institucion.nombre }}</option> }
                                 </select></div>
                             }
-                            <div><label [for]="'ambito' + i">Alcance *</label><select [id]="'ambito' + i" [name]="'ambito' + i" [(ngModel)]="acceso.ambito" [disabled]="acceso.rol === 'SUPER_USUARIO'" (ngModelChange)="acceso.entidad = null"><option value="NACIONAL">Nacional</option><option value="ESTATAL">Por entidad</option></select></div>
+                            <div><label [for]="'ambito' + i">Alcance *</label><select [id]="'ambito' + i" [name]="'ambito' + i" [(ngModel)]="acceso.ambito" required [disabled]="acceso.rol === 'SUPER_USUARIO'" (ngModelChange)="acceso.entidad = null"><option value="">Seleccione un alcance</option>@for(opcion of ambitos(acceso); track opcion.codigo) { <option [value]="opcion.codigo">{{ opcion.nombre }}</option> }</select></div>
                             @if(acceso.ambito === 'ESTATAL')
                             {
                                 <div><label [for]="'entidad' + i">Entidad *</label><select [id]="'entidad' + i" [name]="'entidad' + i" [(ngModel)]="acceso.entidad" required><option [ngValue]="null">Seleccione una entidad</option>@for(entidad of catalogos().entidades; track entidad.id) { <option [ngValue]="entidad.id">{{ entidad.nombre }}</option> }</select></div>

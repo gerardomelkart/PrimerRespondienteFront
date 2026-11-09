@@ -57,7 +57,7 @@ No hay credenciales predeterminadas. Las cuentas se autentican contra la API y s
 | --- | --- |
 | Acceso | Autenticación JWT y sesión en memoria. Recargar o cerrar la pestaña requiere volver a ingresar. |
 | Inicio | Bienvenida y acceso a las operaciones del perfil. Se regresa desde la marca de la barra de navegación o desde el menú de la cuenta. |
-| Carga de información | Plantilla, selección/arrastre XLSX, periodo declarado, errores por fila, observaciones, confirmación, folio y acuse. Disponible para primer respondiente y superusuario; este último elige la corporación. |
+| Carga de información | Plantilla, selección/arrastre XLSX, periodo quincenal desde BD, errores por fila, observaciones, confirmación, folio y acuse. Disponible para primer respondiente y superusuario; este último elige la corporación. |
 | Informes | Submenú con “Reporte primer respondiente” y “Reporte completo”. Ambas muestran el estado «En preparación», sin registros ni exportaciones. El primer respondiente no tiene acceso al reporte completo. |
 | Usuarios | Listado de cuentas activas/inactivas, búsqueda, alta, edición y cambio de estado. Asignación de varios perfiles, instituciones y entidades. Disponible para superusuario. |
 
@@ -97,7 +97,7 @@ La conexión SQL y la clave JWT se configuran exclusivamente en la API mediante 
 
 ## Primera entrega operativa — noviembre de 2026
 
-Aplicar primero los scripts 003 y 004 de BD y actualizar la API. Las cuentas existentes se conservan. La administración obtiene instituciones y entidades de la API; no inventa fiscalías estatales. Para desactivar/reactivar una cuenta, abrir Editar y cambiar su estado.
+Aplicar primero las migraciones pendientes de BD hasta 005 y actualizar la API. Las cuentas existentes se conservan. La administración obtiene instituciones y entidades de la API; no inventa fiscalías estatales. Para desactivar/reactivar una cuenta, abrir Editar y cambiar su estado.
 
 Una cuenta puede tener varios accesos. El selector «Trabajar con acceso» cambia de perfil/institución/entidad e inicia el contexto correspondiente mediante la API. Editar los accesos de una cuenta exige que vuelva a iniciar sesión; si se edita la propia cuenta, el front cierra su sesión.
 
@@ -108,3 +108,13 @@ La carga requiere corporación, fecha, entidad y al menos folio o nombre; autori
 La navegación horizontal sigue la distribución de FESE WEB y conserva los colores, encabezado, tarjetas y formularios actuales. Incluye carga para los perfiles autorizados, Informes con sus dos opciones, Usuarios para superusuario y un menú de cuenta con selector de acceso y cierre de sesión. En pantallas pequeñas se despliega desde «Menú».
 
 Se retiraron la entrada sin autenticación por parámetro de URL, los registros sintéticos, la carga simulada y el PDF de muestra. Todas las entradas requieren autenticación. Los reportes todavía no consultan información real y muestran explícitamente su estado de preparación.
+
+## Carga por acceso y periodo
+
+La corporación del primer respondiente se muestra desde su acceso y no se puede elegir. Solo superusuario tiene selector, alimentado por la API. La validación rechaza filas de otra corporación o, para usuarios estatales, de otra entidad.
+
+El periodo se elige entre las quincenas habilitadas que devuelve la API. No hay calendario fijo en Angular ni campos de inicio/fin editables. Se envía idPeriodo y el servidor obtiene las fechas desde SQL. Las fechas de detención pueden ser anteriores a la entrega.
+
+Al seleccionar un archivo se muestran nombre, tamaño y estado, con acciones para cambiarlo o quitarlo. «Seleccionado» indica que está listo para validar; la recepción se acredita después de confirmar y obtener el folio.
+
+Los perfiles, ámbitos, entidades, instituciones, periodos y límites que se muestran se obtienen de API/BD. Se retiraron las dependencias sin uso @angular/router y sweetalert2. Después del pull ejecutar npm ci, actualizar la API y aplicar la migración 005.

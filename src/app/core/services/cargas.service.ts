@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Carga, Validacion } from '../models/modelos';
+import { Carga, Validacion, CatalogosCarga } from '../models/modelos';
 
 @Injectable({ providedIn: 'root' })
 export class CargasService
@@ -8,17 +8,16 @@ export class CargasService
     private readonly http = inject(HttpClient);
     private readonly base = 'api/primer-respondiente';
 
-    listar()
+    catalogos()
     {
-        return this.http.get<Carga[]>(`${this.base}/cargas`);
+        return this.http.get<CatalogosCarga>('api/catalogos/carga');
     }
 
-    validar(archivo: File, inicio: string, fin: string, institucion?: string)
+    validar(archivo: File, idPeriodo: number, institucion?: string)
     {
         const datos = new FormData();
         datos.append('archivo', archivo);
-        datos.append('periodoInicio', inicio);
-        datos.append('periodoFin', fin);
+        datos.append('idPeriodo', String(idPeriodo));
         if(institucion)
         {
             datos.append('institucion', institucion);

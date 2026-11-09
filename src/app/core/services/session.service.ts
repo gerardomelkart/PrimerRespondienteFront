@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { catchError, tap, throwError } from 'rxjs';
-import { Sesion, Usuario } from '../models/modelos';
+import { Sesion } from '../models/modelos';
 
 @Injectable({ providedIn: 'root' })
 export class SessionService
@@ -22,15 +22,6 @@ export class SessionService
     cerrar()
     {
         this.sesion.set(null);
-    }
-
-    actualizarUsuario(usuario: Usuario)
-    {
-        const sesion = this.sesion();
-        if(sesion)
-        {
-            this.sesion.set({ ...sesion, usuario });
-        }
     }
 }
 

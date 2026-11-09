@@ -1,0 +1,20 @@
+:host { display: block; }
+.datos-entrega { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 16px; }
+.datos-entrega label, .dato-label { display: block; margin: 14px 0 8px; font-size: 13px; font-weight: 700; }
+.dato-valor { display: block; padding: 12px 0; color: var(--siiid-guinda); font-size: 16px; }
+.datos-entrega small { display: block; margin-top: 6px; }
+.nota-periodo { margin: 18px 0 24px; color: #777; font-size: 12px; }
+.arrastre.con-archivo { border-style: solid; border-color: #78a391; background: #f5faf7; }
+.archivo-seleccionado { display: flex; align-items: center; gap: 18px; width: min(100%, 680px); text-align: left; }
+.archivo-seleccionado > div { flex: 1; min-width: 0; }
+.archivo-icono { color: #285c4d; font-size: 42px; }
+.archivo-estado { display: block; color: #285c4d; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+.archivo-seleccionado strong { display: block; color: #222; overflow-wrap: anywhere; font-size: 16px; }
+.archivo-seleccionado small { display: block; margin-top: 6px; color: #667085; }
+.quitar-archivo { flex-shrink: 0; border: 1px solid #d9e3dd; border-radius: 6px; background: #fff; color: #555; width: 38px; height: 38px; }
+@media(max-width: 650px)
+{
+    .datos-entrega { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .archivo-seleccionado { gap: 12px; }
+    .archivo-icono { font-size: 30px; }
+}

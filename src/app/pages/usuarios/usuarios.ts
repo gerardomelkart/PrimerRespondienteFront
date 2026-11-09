@@ -21,17 +21,27 @@ export class UsuariosPage
     readonly mensaje = signal('');
     readonly mensajeFormulario = signal('');
     readonly usuarios = signal<Usuario[]>([]);
-    readonly catalogos = signal<CatalogosUsuarios>({ entidades: [], instituciones: [] });
+    readonly catalogos = signal<CatalogosUsuarios>({ entidades: [], instituciones: [], perfiles: [], ambitos: [] });
     readonly busqueda = signal('');
     readonly pagina = signal(1);
     readonly porPagina = 15;
     editando: number | null = null;
-    readonly perfiles = [
-        { valor: 'PRIMER_RESPONDIENTE', nombre: 'Primer respondiente' },
-        { valor: 'FISCALIA', nombre: 'Fiscalía' },
-        { valor: 'SUPER_USUARIO', nombre: 'Superusuario' },
-        { valor: 'CONSULTA', nombre: 'Consulta' }
-    ];
+    get perfiles()
+    {
+        return this.catalogos().perfiles;
+    }
+
+    perfil(acceso: AccesoUsuario)
+    {
+        return this.perfiles.find(p => p.codigo === acceso.rol);
+    }
+
+    ambitos(acceso: AccesoUsuario)
+    {
+        const perfil = this.perfil(acceso);
+        return perfil ? this.catalogos().ambitos.filter(a => perfil.permiteEstatal || !a.requiereEntidad) : [];
+    }
+
     readonly filtrados = computed(() =>
     {
         const texto = this.normalizar(this.busqueda());
@@ -52,7 +62,7 @@ export class UsuariosPage
 
     nombrePerfil(rol: string)
     {
-        return this.perfiles.find(perfil => perfil.valor === rol)?.nombre ?? rol;
+        return this.perfiles.find(perfil => perfil.codigo === rol)?.nombre ?? rol;
     }
 
     contar(rol: string)
@@ -74,7 +84,7 @@ export class UsuariosPage
 
     instituciones(acceso: AccesoUsuario)
     {
-        const tipo = acceso.rol === 'PRIMER_RESPONDIENTE' ? 'CORPORACION' : acceso.rol === 'FISCALIA' ? 'FISCALIA' : null;
+        const tipo = this.perfil(acceso)?.tipoInstitucion;
         return this.catalogos().instituciones.filter(i => !tipo || i.tipo === tipo);
     }
 
@@ -85,7 +95,7 @@ export class UsuariosPage
 
     accesoVacio(): AccesoUsuario
     {
-        return { rol: 'PRIMER_RESPONDIENTE', institucion: null, ambito: 'NACIONAL', entidad: null };
+        return { rol: '', institucion: null, ambito: '', entidad: null };
     }
 
     usuarioVacio()
@@ -113,9 +123,10 @@ export class UsuariosPage
     cambiarPerfil(acceso: AccesoUsuario)
     {
         acceso.institucion = null;
-        if(acceso.rol === 'SUPER_USUARIO')
+        const ambitos = this.ambitos(acceso);
+        if(!ambitos.some(a => a.codigo === acceso.ambito))
         {
-            acceso.ambito = 'NACIONAL';
+            acceso.ambito = ambitos.length === 1 ? ambitos[0].codigo : '';
             acceso.entidad = null;
         }
     }

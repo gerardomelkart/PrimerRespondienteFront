@@ -1,14 +1,31 @@
 export interface AccesoUsuario
 {
     id?: number;
-    rol: 'SUPER_USUARIO' | 'PRIMER_RESPONDIENTE' | 'FISCALIA' | 'CONSULTA';
+    rol: string;
     institucion: string | null;
-    ambito: 'NACIONAL' | 'ESTATAL';
+    ambito: string;
     entidad: number | null;
+}
+
+export interface Perfil
+{
+    codigo: string;
+    nombre: string;
+    tipoInstitucion: string | null;
+    requiereInstitucion: boolean;
+    permiteEstatal: boolean;
+}
+
+export interface CatalogosCarga
+{
+    periodos: { id: number; inicio: string; fin: string; nombre: string }[];
+    limites: { maximoBytes: number; maximoFilas: number };
 }
 
 export interface CatalogosUsuarios
 {
+    perfiles: Perfil[];
+    ambitos: { codigo: string; nombre: string; requiereEntidad: boolean }[];
     entidades: { id: number; nombre: string }[];
     instituciones: { codigo: string; nombre: string; tipo: string }[];
 }
@@ -21,7 +38,7 @@ export interface Usuario
     id: number;
     usuario: string;
     nombre: string;
-    rol: 'SUPER_USUARIO' | 'PRIMER_RESPONDIENTE' | 'FISCALIA' | 'CONSULTA';
+    rol: string;
     institucion: string | null;
     ambito: string;
     entidad: number | null;
