@@ -105,10 +105,27 @@
             </nav>
             <p class="nota-periodo">El Excel incluye todos los errores y observaciones, de todas las páginas.</p>
         }
-        @if(resultado.valido) { <p>Al confirmar se registrará la entrega y se generará su folio.</p><button type="button" class="primario" (click)="confirmar()" [disabled]="ocupado()">Confirmar entrega</button> }
+        @if(resultado.valido) { <p>Al confirmar se registrará la entrega y se generará su folio.</p><button type="button" class="primario" (click)="abrirAcuse(resultado.idCarga!)" [disabled]="ocupado()">Revisar acuse y confirmar</button> }
     </section>
 }
 @if(aceptada(); as carga)
 {
-    <section class="tarjeta confirmacion" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><h2>Entrega recibida</h2><p>Folio de entrega</p><strong class="folio">{{ carga.folio }}</strong><p>{{ carga.totalRegistros }} registros aceptados</p><button type="button" class="primario" (click)="descargar('cargas/' + carga.id + '/acuse', 'Acuse_' + carga.folio + '.html')">Descargar acuse</button></section>
+    <section class="tarjeta entrega-finalizada" role="status"><div><strong><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Entrega recibida · {{ carga.folio }}</strong><p>{{ carga.totalRegistros | number }} registros aceptados.</p></div><button type="button" class="secundario" (click)="abrirAcuse(carga.id)">Ver acuse</button></section>
 }
+<dialog #modalAcuse class="modal-acuse" aria-labelledby="titulo-acuse" (cancel)="cerrarAcuse($event)">
+    <div class="acuse-cabecera"><div><span>PRIMER RESPONDIENTE</span><h2 id="titulo-acuse">{{ aceptada() ? 'Acuse definitivo de entrega' : 'Vista previa del acuse' }}</h2></div><button type="button" class="cerrar-acuse" aria-label="Cerrar acuse" (click)="cerrarAcuse()" [disabled]="ocupado()">×</button></div>
+    <div class="acuse-resumen" aria-live="polite">
+        @if(aceptada(); as carga) { <strong>Entrega recibida · {{ carga.folio }}</strong><span>{{ carga.totalRegistros | number }} registros aceptados</span> }
+        @else { <strong>La entrega aún no está confirmada.</strong><span>{{ validacion()?.avisos?.length ?? 0 | number }} observaciones. Revise la tabla de resultados antes de confirmar.</span> }
+    </div>
+    <div class="acuse-contenido">
+        @if(cargandoAcuse()) { <p role="status"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Generando acuse…</p> }
+        @if(errorAcuse()) { <div class="aviso" role="alert">{{ errorAcuse() }} <button type="button" class="secundario" (click)="reintentarAcuse()">Reintentar</button></div> }
+        @if(acuseUrl(); as pdf) { <iframe [src]="pdf" title="Vista del acuse de Primer Respondiente"></iframe> }
+    </div>
+    <div class="acuse-acciones">
+        <button type="button" class="secundario" (click)="cerrarAcuse()" [disabled]="ocupado()">{{ aceptada() ? 'Cerrar' : 'Volver a los resultados' }}</button>
+        <button type="button" class="secundario" (click)="descargarAcuse()" [disabled]="!acuseUrl() || ocupado()"><i class="fa-solid fa-download" aria-hidden="true"></i> {{ aceptada() ? 'Descargar acuse PDF' : 'Descargar vista previa' }}</button>
+        @if(!aceptada()) { <button type="button" class="primario" (click)="confirmar()" [disabled]="ocupado() || !acuseUrl()">{{ ocupado() ? 'Confirmando…' : 'Confirmar entrega' }}</button> }
+    </div>
+</dialog>

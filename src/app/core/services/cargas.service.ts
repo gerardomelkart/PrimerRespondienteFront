@@ -37,6 +37,6 @@ export class CargasService
 
     descargar(ruta: string)
     {
-        return this.http.get(`${this.base}/${ruta}`, { responseType: 'blob' });
+        return this.http.get(`${this.base}/${ruta}`, { responseType: 'blob', observe: 'response' });
     }
 }

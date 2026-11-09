@@ -1,7 +1,9 @@
 import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Subscription } from 'rxjs';
 import { SessionService } from '../../core/services/session.service';
 import { CargasService } from '../../core/services/cargas.service';
 import { Carga, Validacion, CatalogosUsuarios, CatalogosCarga, IncidenciaValidacion } from '../../core/models/modelos';
@@ -15,6 +17,16 @@ import { Carga, Validacion, CatalogosUsuarios, CatalogosCarga, IncidenciaValidac
 export class CargaPage
 {
     readonly session = inject(SessionService);
+    private readonly sanitizer = inject(DomSanitizer);
+    readonly acuseUrl = signal<SafeResourceUrl | null>(null);
+    readonly cargandoAcuse = signal(false);
+    readonly errorAcuse = signal('');
+    private acuseBlob: Blob | null = null;
+    private acuseObjectUrl: string | null = null;
+    private acuseSolicitud?: Subscription;
+    private idAcuse = '';
+    private nombreAcuse = 'Acuse_PrimerRespondiente.pdf';
+    @ViewChild('modalAcuse') private modalAcuse?: ElementRef<HTMLDialogElement>;
     private readonly cargasService = inject(CargasService);
     readonly ocupado = signal(false);
     readonly mensaje = signal('');
@@ -247,7 +259,14 @@ export class CargaPage
                 this.paginaResultado = 1;
                 this.validacion.set(resultado);
                 this.ocupado.set(false);
-                setTimeout(() => document.getElementById('resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                if(resultado.valido && resultado.idCarga)
+                {
+                    this.abrirAcuse(resultado.idCarga);
+                }
+                else
+                {
+                    setTimeout(() => document.getElementById('resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                }
             },
             error: error => this.error(error)
         });
@@ -265,11 +284,117 @@ export class CargaPage
             {
                 this.aceptada.set(carga);
                 this.validacion.set(null);
+                this.archivo = null;
+                if(this.selectorArchivo)
+                {
+                    this.selectorArchivo.nativeElement.value = '';
+                }
                 this.ocupado.set(false);
+                this.abrirAcuse(carga.id);
             },
-            error: error => this.error(error)
+            error: error =>
+            {
+                this.error(error);
+                this.errorAcuse.set(error.error?.mensaje ?? 'No se pudo confirmar la entrega. Vuelva a intentarlo.');
+            }
         });
     }
+    abrirAcuse(id: string)
+    {
+        this.acuseSolicitud?.unsubscribe();
+        this.limpiarAcuse();
+        this.idAcuse = id;
+        this.errorAcuse.set('');
+        this.cargandoAcuse.set(true);
+        if(!this.modalAcuse?.nativeElement.open)
+        {
+            this.modalAcuse?.nativeElement.showModal();
+        }
+        this.acuseSolicitud = this.cargasService.descargar('cargas/' + id + '/acuse').subscribe({
+            next: respuesta =>
+            {
+                this.cargandoAcuse.set(false);
+                if(!respuesta.body || respuesta.body.type !== 'application/pdf')
+                {
+                    this.errorAcuse.set('No se recibió un PDF válido. Puede volver a intentarlo.');
+                    return;
+                }
+                this.acuseBlob = respuesta.body;
+                this.nombreAcuse = this.nombreRespuesta(respuesta, 'Acuse_PrimerRespondiente.pdf');
+                this.acuseObjectUrl = URL.createObjectURL(respuesta.body);
+                this.acuseUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.acuseObjectUrl + '#toolbar=0'));
+            },
+            error: () =>
+            {
+                this.cargandoAcuse.set(false);
+                this.errorAcuse.set(this.aceptada() ? 'La entrega fue recibida, pero no se pudo cargar el acuse. Vuelva a intentarlo.' : 'No se pudo cargar el acuse previo. Vuelva a intentarlo.');
+            }
+        });
+    }
+
+    reintentarAcuse()
+    {
+        this.abrirAcuse(this.idAcuse);
+    }
+
+    descargarAcuse()
+    {
+        if(this.acuseBlob)
+        {
+            this.guardarDescarga(this.acuseBlob, this.nombreAcuse);
+        }
+    }
+
+    cerrarAcuse(evento?: Event)
+    {
+        if(this.ocupado())
+        {
+            evento?.preventDefault();
+            return;
+        }
+        this.acuseSolicitud?.unsubscribe();
+        this.modalAcuse?.nativeElement.close();
+        this.limpiarAcuse();
+        this.cargandoAcuse.set(false);
+    }
+
+    private limpiarAcuse()
+    {
+        if(this.acuseObjectUrl)
+        {
+            URL.revokeObjectURL(this.acuseObjectUrl);
+        }
+        this.acuseObjectUrl = null;
+        this.acuseBlob = null;
+        this.acuseUrl.set(null);
+    }
+
+    ngOnDestroy()
+    {
+        this.acuseSolicitud?.unsubscribe();
+        this.limpiarAcuse();
+    }
+
+    private nombreRespuesta(respuesta: HttpResponse<Blob>, respaldo: string)
+    {
+        const cabecera = respuesta.headers.get('Content-Disposition') ?? '';
+        const extendido = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(cabecera);
+        let nombre = /filename\s*=\s*"([^"]+)"/i.exec(cabecera)?.[1]
+            ?? /filename\s*=\s*([^;]+)/i.exec(cabecera)?.[1] ?? respaldo;
+        if(extendido)
+        {
+            try
+            {
+                nombre = decodeURIComponent(extendido[1]);
+            }
+            catch
+            {
+                nombre = respaldo;
+            }
+        }
+        return nombre.replace(/[\\/\x00-\x1f]/g, '_').trim() || respaldo;
+    }
+
     exportarValidacion()
     {
         if(this.exportando() || !this.incidencias().length)
@@ -304,9 +429,12 @@ export class CargaPage
     descargar(ruta: string, nombre: string)
     {
         this.cargasService.descargar(ruta).subscribe({
-            next: blob =>
+            next: respuesta =>
             {
-                this.guardarDescarga(blob, nombre);
+                if(respuesta.body)
+                {
+                    this.guardarDescarga(respuesta.body, this.nombreRespuesta(respuesta, nombre));
+                }
             },
             error: error => this.error(error)
         });

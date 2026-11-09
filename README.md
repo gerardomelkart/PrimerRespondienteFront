@@ -20,7 +20,7 @@ El navegador se comunica por HTTP con la API; la API consulta y persiste en SQL 
 
 ## Flujo y alcance
 
-El flujo implementado para las corporaciones permite descargar una plantilla, cargar un Excel, revisar errores y observaciones y confirmar una entrega para obtener un folio y un acuse HTML imprimible. El archivo original se conserva junto con los registros aceptados.
+El flujo implementado para las corporaciones permite descargar una plantilla, cargar un Excel, revisar errores y observaciones y confirmar una entrega para obtener un folio y un acuse PDF institucional generado bajo demanda. Se conservan los registros y metadatos de la entrega; no se almacenan archivos Excel ni PDF en la base o en el disco de la API.
 
 El flujo previsto para fiscalías consiste en descargar una plantilla con información de referencia y completar los campos de seguimiento ministerial. Esa segunda etapa todavía no está implementada.
 
@@ -83,7 +83,7 @@ npm run build:servidor
 
 Salida: `dist/PrimerRespondienteFront/browser`. `build:servidor` utiliza base `/primer-respondiente/`. El servidor debe publicar el front bajo esa ruta y enviar `/primer-respondiente/api/` al `/api/` de Kestrel, conservando Authorization y usando HTTPS público.
 
-Las URL de API y assets son relativas al base-href. El acuse actual es HTML descargable, imprimible o guardable como PDF desde el navegador; no es todavía un generador de PDF institucional.
+Las URL de API y assets son relativas al base-href. El acuse es un PDF generado por la API y se muestra en un modal: previo después de validar y definitivo después de confirmar. La descarga utiliza el nombre indicado por Content-Disposition.
 
 ## Desarrollo y verificaciones
 
@@ -126,3 +126,7 @@ La página inicial presenta el acceso actual y accesos directos según el perfil
 ## Resultados de validación
 
 Los errores y observaciones se muestran juntos en una tabla de 20 filas por página inicialmente, con opciones de 50 y 100, salto directo y botones de primera/última página. Todas las columnas permiten orden ascendente y descendente sobre el conjunto completo; el orden predeterminado es por fila del Excel. Los mensajes generales aparecen sin número de fila. Cada incidencia muestra el valor original de la celda (sin normalizar); las celdas vacías se distinguen de los mensajes generales. La descarga genera un XLSX con todos los resultados y valores originales, en el orden seleccionado, independientemente de la página visible; se requiere la versión correspondiente de la API. Esto no ejecuta el cruce con RND, que permanece pendiente.
+
+## Modal del acuse
+
+Después de una validación correcta se abre la vista previa del PDF en un diálogo. Permite regresar a la tabla de observaciones o confirmar la entrega. Al confirmar, el mismo modal muestra el PDF definitivo con folio y descarga con nombre descriptivo. Se limpia la selección del archivo para evitar repetir el envío. Cerrar y reabrir el acuse lo genera nuevamente desde la API; los errores de generación no invalidan una entrega ya confirmada. Actualizar API/front y aplicar la migración 006 del repo BD.
