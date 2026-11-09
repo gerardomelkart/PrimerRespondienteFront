@@ -1,22 +1,55 @@
-<main class="acceso">
-        <section class="presentacion">
-            <span class="etiqueta">CORPORACIONES FEDERALES Y FISCALÍAS</span>
-            <h1>Reporte y seguimiento<br>de detenciones.</h1>
-            <p>Recepción de reportes de SEDENA, SEMAR, Guardia Nacional y SSPC.</p>
-            <div class="sello-institucional"><span></span>Centro Nacional de Información</div>
-        </section>
-        <section class="tarjeta login">
-            <span class="etiqueta">ACCESO AL SISTEMA</span>
-            <h2>Bienvenido</h2>
-            <p class="muted">Ingresa con tu cuenta institucional.</p>
-            <form (ngSubmit)="login()">
-                <label for="usuario">Usuario</label>
-                <input id="usuario" name="usuario" [(ngModel)]="usuario" autocomplete="username" required maxlength="80">
-                <label for="password">Contraseña</label>
-                <input id="password" name="password" type="password" [(ngModel)]="password" autocomplete="current-password" required maxlength="200">
-                @if(mensaje()) { <p class="aviso error" role="alert">{{ mensaje() }}</p> }
-                <button class="primario ancho" [disabled]="ocupado()">{{ ocupado() ? 'Ingresando…' : 'Iniciar sesión' }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
-            </form>
-            <p class="pie-login">Centro Nacional de Información</p>
-        </section>
+<section class="ministerial-access">
+    <header class="access-institution">
+        <div class="access-government">CENTRO NACIONAL DE INFORMACIÓN Y DESARROLLO TECNOLÓGICO</div>
+        <div class="access-brand">
+            <img src="img/LogoSEGURIDAD.png" alt="Gobierno de México, Seguridad y Secretariado Ejecutivo del Sistema Nacional de Seguridad Pública">
+            <div class="access-module"><strong>Primer Respondiente</strong><span>Eficiencia Ministerial</span></div>
+        </div>
+    </header>
+
+    <main class="access-main">
+        <div class="access-ornament access-ornament-left" aria-hidden="true"></div>
+        <div class="access-ornament access-ornament-right" aria-hidden="true"></div>
+
+        <form #formulario="ngForm" class="access-card" (ngSubmit)="formulario.valid && login()" aria-labelledby="access-title" [attr.aria-busy]="ocupado()">
+            <div class="access-heading">
+                <span class="access-eyebrow">ACCESO AL SISTEMA</span>
+                <h1 id="access-title">Bienvenido</h1>
+                <p>Reporte de detenciones<br>y seguimiento ministerial</p>
+            </div>
+
+            <label class="access-label" for="usuario">Usuario</label>
+            <div class="access-field">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M5 21v-3a7 7 0 0 1 14 0v3" /></svg>
+                <input id="usuario" name="usuario" type="text" [(ngModel)]="usuario" autocomplete="username" placeholder="Ingrese su usuario" [disabled]="ocupado()" required maxlength="80">
+            </div>
+
+            <label class="access-label" for="password">Contraseña</label>
+            <div class="access-field">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></svg>
+                <input id="password" name="password" type="password" [(ngModel)]="password" autocomplete="current-password" placeholder="Ingrese su contraseña" [disabled]="ocupado()" required maxlength="200" [attr.aria-describedby]="mensaje() ? 'login-error' : null">
+            </div>
+
+            @if(mensaje())
+            {
+                <div id="login-error" class="access-error" role="alert">{{ mensaje() }}</div>
+            }
+
+            <button type="submit" class="access-submit" [disabled]="ocupado() || formulario.invalid">
+                {{ ocupado() ? 'Ingresando…' : 'Ingresar al sistema' }}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+            </button>
+
+            <div class="access-card-foot">
+                <span class="access-divider" aria-hidden="true"></span>
+                <p>Eficiencia Ministerial · Primer Respondiente</p>
+                <small>Acceso exclusivo para usuarios autorizados</small>
+            </div>
+        </form>
+
+        <footer class="access-footer">
+            <span>Secretariado Ejecutivo del Sistema Nacional de Seguridad Pública</span>
+            <span>Corporaciones federales y fiscalías</span>
+        </footer>
     </main>
+</section>

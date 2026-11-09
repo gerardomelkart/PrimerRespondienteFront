@@ -1,15 +1,14 @@
-import { Component, inject, signal, output } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { SessionService } from '../../core/services/session.service';
-import { CargasService } from '../../core/services/cargas.service';
-import { Carga, Validacion, Usuario } from '../../core/models/modelos';
 
 @Component({
     selector: 'app-login',
     imports: [CommonModule, FormsModule],
-    templateUrl: './login.html'
+    templateUrl: './login.html',
+    styleUrl: './login.css'
 })
 export class LoginPage
 {
