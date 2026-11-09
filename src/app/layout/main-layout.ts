@@ -1,37 +1,42 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AccesoUsuario } from '../core/models/modelos';
+import { AccesoUsuario, Usuario } from '../core/models/modelos';
 import { SessionService } from '../core/services/session.service';
 import { InicioPage } from '../pages/inicio/inicio';
 import { CargaPage } from '../pages/carga/carga';
 import { UsuariosPage } from '../pages/usuarios/usuarios';
-import { CargaDemoPage } from '../pages/carga-demo/carga-demo';
-import { Usuario } from '../core/models/modelos';
 import { InformesPage } from '../pages/informes/informes';
 
 @Component({
     selector: 'app-main-layout',
-    imports: [FormsModule, InicioPage, CargaPage, UsuariosPage, InformesPage, CargaDemoPage],
+    imports: [FormsModule, InicioPage, CargaPage, UsuariosPage, InformesPage],
     templateUrl: './main-layout.html',
     styleUrl: './main-layout.css'
 })
 export class MainLayout
 {
-    readonly demo = input(false);
     readonly session = inject(SessionService);
-    pagina: 'inicio' | 'carga' | 'carga-demo' | 'reporte-primer-respondiente' | 'reporte-completo' | 'usuarios' = 'inicio';
-    informesAbierto = false;
-    administracionAbierta = false;
-    cargaAbierta = false;
+    private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
+    pagina: 'inicio' | 'carga' | 'reporte-primer-respondiente' | 'reporte-completo' | 'usuarios' = 'inicio';
+    desplegable: 'informes' | 'cuenta' | null = null;
     menuAbierto = false;
+    readonly cambiandoAcceso = signal(false);
+    readonly errorAcceso = signal('');
 
     get usuario(): Usuario
     {
-        return this.demo() ? { id: 0, usuario: 'demo', nombre: 'Presentación del sistema', rol: 'CONSULTA', institucion: null, ambito: 'NACIONAL', entidad: null } : this.session.sesion()!.usuario;
+        return this.session.sesion()!.usuario;
     }
 
-    readonly cambiandoAcceso = signal(false);
-    readonly errorAcceso = signal('');
+    get puedeCargar()
+    {
+        return this.usuario.rol === 'PRIMER_RESPONDIENTE' || this.usuario.rol === 'SUPER_USUARIO';
+    }
+
+    get esInforme()
+    {
+        return this.pagina === 'reporte-primer-respondiente' || this.pagina === 'reporte-completo';
+    }
 
     descripcionAcceso(acceso: AccesoUsuario)
     {
@@ -49,7 +54,7 @@ export class MainLayout
         this.session.cambiarAcceso(id).subscribe({
             next: () =>
             {
-                this.pagina = 'inicio';
+                this.navegar('inicio');
                 this.cambiandoAcceso.set(false);
             },
             error: () =>
@@ -60,13 +65,36 @@ export class MainLayout
         });
     }
 
-    salir()
+    alternar(tipo: 'informes' | 'cuenta')
     {
-        if(this.demo())
+        this.desplegable = this.desplegable === tipo ? null : tipo;
+    }
+
+    @HostListener('document:click', ['$event'])
+    cerrarFuera(evento: MouseEvent)
+    {
+        if(!(evento.target instanceof Element) || !this.elemento.nativeElement.contains(evento.target)
+            || !evento.target.closest('.nav-desplegable'))
         {
-            window.location.assign(window.location.pathname);
+            this.desplegable = null;
+        }
+    }
+
+    @HostListener('document:keydown.escape')
+    cerrarMenus()
+    {
+        if(!this.desplegable && !this.menuAbierto)
+        {
             return;
         }
+        const boton = this.menuAbierto ? '#boton-menu' : `#boton-${this.desplegable}`;
+        this.desplegable = null;
+        this.menuAbierto = false;
+        this.elemento.nativeElement.querySelector<HTMLButtonElement>(boton)?.focus();
+    }
+
+    salir()
+    {
         this.session.cerrar();
     }
 
@@ -74,7 +102,6 @@ export class MainLayout
     {
         switch(this.pagina)
         {
-            case 'carga-demo': return 'Carga de demostración';
             case 'carga': return 'Integrar información';
             case 'reporte-primer-respondiente': return 'Reporte primer respondiente';
             case 'reporte-completo': return 'Reporte completo';
@@ -85,19 +112,14 @@ export class MainLayout
 
     navegar(pagina: typeof this.pagina)
     {
+        if((pagina === 'carga' && !this.puedeCargar)
+            || (pagina === 'usuarios' && this.usuario.rol !== 'SUPER_USUARIO')
+            || (pagina === 'reporte-completo' && this.usuario.rol === 'PRIMER_RESPONDIENTE'))
+        {
+            return;
+        }
         this.pagina = pagina;
-        if(pagina === 'carga')
-        {
-            this.cargaAbierta = true;
-        }
-        if(pagina === 'reporte-primer-respondiente' || pagina === 'reporte-completo')
-        {
-            this.informesAbierto = true;
-        }
-        if(pagina === 'usuarios')
-        {
-            this.administracionAbierta = true;
-        }
         this.menuAbierto = false;
+        this.desplegable = null;
     }
 }

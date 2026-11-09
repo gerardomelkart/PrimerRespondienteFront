@@ -133,37 +133,6 @@ button {
     width: 100%;
     margin-top: 26px;
 }
-.perfil span, .perfil small {
-    color: #777;
-    font-size: 11px;
-}
-
-nav {
-    padding: 20px 12px;
-}
-nav button, .salir {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    border: 0;
-    background: transparent;
-    padding: 15px;
-    width: 100%;
-    text-align: left;
-    color: #555;
-}
-nav button.activo {
-    color: #691c32;
-    background: #f5ecef;
-    border-left: 3px solid #691c32;
-    font-weight: 700;
-}
-.salir {
-    margin-top: auto;
-    padding: 24px;
-    border-top: 1px solid #eee;
-}
-
 .ruta span {
     padding: 0 12px;
     color: #bc955c;
@@ -374,73 +343,6 @@ button:disabled {
     cursor: not-allowed;
 }
 
-.estructura {
-    display: grid;
-    grid-template-columns: 248px minmax(0, 1fr);
-    min-height: calc(100dvh - 100px);
-}
-
-aside {
-    background: #fff;
-    border-right: 1px solid #ddd;
-    display: flex;
-    flex-direction: column;
-    border-color: var(--em-borde);
-}
-
-.perfil {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 9px;
-    padding: 30px 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.perfil strong {
-    overflow-wrap: anywhere;
-}
-
-.perfil small {
-    color: #691c32;
-    background: #f5ecef;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-}
-
-.avatar {
-    background: #f2e9ec;
-    color: #691c32;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    margin-bottom: 6px;
-    border: 1px solid #eadce1;
-}
-
-nav button {
-    margin-bottom: 6px;
-    border-radius: 6px;
-    border-left: 3px solid transparent;
-    min-height: 48px;
-}
-
-nav button:hover, .salir:hover {
-    color: var(--siiid-guinda);
-    background: #faf5f7;
-}
-
-nav button i {
-    width: 20px;
-    text-align: center;
-}
-
 .contenido {
     min-width: 0;
     padding: 30px 40px;
@@ -545,10 +447,6 @@ footer {
 }
 
 @media(max-width: 1000px) {
-    .estructura {
-        grid-template-columns: 210px minmax(0, 1fr);
-    }
-
     .contenido {
         padding: 24px;
     }
@@ -602,33 +500,6 @@ footer {
 
     .identidad strong {
         font-size: 18px;
-    }
-
-    .estructura {
-        display: block;
-    }
-
-    .perfil {
-        display: none;
-    }
-
-    nav {
-        display: flex;
-        flex-wrap: wrap;
-        padding: 8px;
-        gap: 4px;
-    }
-
-    nav button {
-        width: auto;
-        font-size: 12px;
-        padding: 12px;
-        gap: 8px;
-        margin: 0;
-    }
-
-    .salir {
-        padding: 14px 22px;
     }
 
     .resumen, .form-usuarios {

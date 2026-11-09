@@ -36,7 +36,7 @@ Las futuras conexiones con SIIID e Ingesta de Datos no están implementadas. El 
 2. Configurar la conexión y la clave JWT fuera del código, crear el superusuario e iniciar la API.
 3. Instalar las dependencias del front e iniciar Angular con su proxy local.
 
-Cada repositorio detalla sus pasos más abajo. No se incluyen credenciales predeterminadas ni datos personales de ejemplo; las demostraciones deben utilizar datos ficticios.
+Cada repositorio detalla sus pasos más abajo. No se incluyen credenciales predeterminadas ni datos personales de ejemplo.
 
 ## Arranque local
 
@@ -49,16 +49,16 @@ npm start
 
 Abrir `http://localhost:4200`. `proxy.conf.json` envía `/api` a `http://127.0.0.1:5010`. Iniciar primero la API y crear el superusuario siguiendo su [guía de configuración](https://github.com/gerardomelkart/EficienciaMinisterialApi/blob/main/docs/configuracion-entornos.md).
 
-No hay credenciales de demostración. Las cuentas se autentican contra la API y se almacenan en la base del proyecto.
+No hay credenciales predeterminadas. Las cuentas se autentican contra la API y se almacenan en la base del proyecto.
 
 ## Pantallas actuales
 
 | Pantalla | Estado |
 | --- | --- |
 | Acceso | Autenticación JWT y sesión en memoria. Recargar o cerrar la pestaña requiere volver a ingresar. |
-| Inicio | Bienvenida y acceso a las operaciones del perfil. Se regresa desde la tarjeta del usuario. |
+| Inicio | Bienvenida y acceso a las operaciones del perfil. Se regresa desde la marca de la barra de navegación o desde el menú de la cuenta. |
 | Carga de información | Plantilla, selección/arrastre XLSX, periodo declarado, errores por fila, observaciones, confirmación, folio y acuse. Disponible para primer respondiente y superusuario; este último elige la corporación. |
-| Informes | Submenú con “Reporte primer respondiente” y “Reporte completo”. Ambas son vistas demo con datos sintéticos. El primer respondiente no tiene acceso al reporte completo ni al detalle ministerial. |
+| Informes | Submenú con “Reporte primer respondiente” y “Reporte completo”. Ambas muestran el estado «En preparación», sin registros ni exportaciones. El primer respondiente no tiene acceso al reporte completo. |
 | Usuarios | Listado de cuentas activas/inactivas, búsqueda, alta, edición y cambio de estado. Asignación de varios perfiles, instituciones y entidades. Disponible para superusuario. |
 
 La vista anterior de Entregas fue retirada de la navegación. Los endpoints de consulta y descarga siguen existiendo en la API, pero los informes del front aún no los utilizan. La API comprueba los permisos; ocultar opciones de menú no sustituye la autorización del servidor.
@@ -95,18 +95,16 @@ Se han realizado compilaciones de producción y pruebas visuales con respuestas 
 
 La conexión SQL y la clave JWT se configuran exclusivamente en la API mediante User Secrets o variables de entorno. No deben incorporarse secretos al código Angular: el navegador recibe los archivos compilados del front. No subir archivos reales de detenciones, datos personales ni logs a estos repositorios.
 
-## Presentación visual sin API
-
-Ejecutar `npm ci` y `npm start`; abrir `http://localhost:4200/?demo=1`. Esta entrada muestra una presentación aislada sin crear una sesión ni consultar la API. La entrada normal conserva la autenticación existente.
-
-Los dos informes contienen 48 registros sintéticos, filtros, paginación, exportación CSV y detalle. El reporte completo separa información de corporación, RND y fiscalía, tomando los encabezados de los formatos de referencia. No contiene registros extraídos de esos archivos.
-
-La opción «Carga de demostración» permite elegir un archivo de ejemplo y recorrer una validación, observaciones y folio simulados. Si se selecciona un Excel del equipo, solo se muestra su nombre: no se leen ni envían sus bytes. El acuse descargable es un PDF de ejemplo fijo con datos ficticios, independiente de la selección en pantalla y sin validez oficial. Esta vista también está disponible desde el menú después de iniciar sesión; la carga real conserva su ruta y permisos.
-
 ## Primera entrega operativa — noviembre de 2026
 
 Aplicar primero los scripts 003 y 004 de BD y actualizar la API. Las cuentas existentes se conservan. La administración obtiene instituciones y entidades de la API; no inventa fiscalías estatales. Para desactivar/reactivar una cuenta, abrir Editar y cambiar su estado.
 
 Una cuenta puede tener varios accesos. El selector «Trabajar con acceso» cambia de perfil/institución/entidad e inicia el contexto correspondiente mediante la API. Editar los accesos de una cuenta exige que vuelva a iniciar sesión; si se edita la propia cuenta, el front cierra su sesión.
 
-La carga requiere corporación, fecha, entidad y al menos folio o nombre; autoridad y fuero son opcionales. IA/AI se rechazan. Los folios de nomenclatura incorrecta generan observación para el cruce posterior. El cruce real con RND, la bandera consolidada de duplicados, los cierres de quincenas y la carga de fiscalías siguen pendientes de implementación. Los informes existentes continúan siendo una muestra visual.
+La carga requiere corporación, fecha, entidad y al menos folio o nombre; autoridad y fuero son opcionales. IA/AI se rechazan. Los folios de nomenclatura incorrecta generan observación para el cruce posterior. El cruce real con RND, la bandera consolidada de duplicados, los cierres de quincenas y la carga de fiscalías siguen pendientes de implementación. Los informes permanecen en preparación hasta incorporar consultas reales.
+
+## Navegación
+
+La navegación horizontal sigue la distribución de FESE WEB y conserva los colores, encabezado, tarjetas y formularios actuales. Incluye carga para los perfiles autorizados, Informes con sus dos opciones, Usuarios para superusuario y un menú de cuenta con selector de acceso y cierre de sesión. En pantallas pequeñas se despliega desde «Menú».
+
+Se retiraron la entrada sin autenticación por parámetro de URL, los registros sintéticos, la carga simulada y el PDF de muestra. Todas las entradas requieren autenticación. Los reportes todavía no consultan información real y muestran explícitamente su estado de preparación.

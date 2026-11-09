@@ -4,7 +4,7 @@
 <section class="tarjeta inicio-accion">
     <div>
         <h2>{{ (session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE' || session.sesion()!.usuario.rol === 'SUPER_USUARIO') ? 'Carga de información' : 'Consulta de información' }}</h2>
-        <p class="muted">Selecciona una opción del menú para continuar.</p>
+        <p class="muted">Selecciona una opción de la barra de navegación para continuar.</p>
     </div>
     @if((session.sesion()!.usuario.rol === 'PRIMER_RESPONDIENTE' || session.sesion()!.usuario.rol === 'SUPER_USUARIO'))
     {

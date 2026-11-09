@@ -1,4 +1,4 @@
-@if(!demo && !session.sesion())
+@if(!session.sesion())
 {
     <app-login />
 }
@@ -8,12 +8,5 @@
         <img src="img/LogoSEGURIDAD2.png" alt="Gobierno de México · Seguridad · Secretariado Ejecutivo">
         <div class="identidad"><span>Eficiencia Ministerial</span><strong>Primer Respondiente</strong></div>
     </header>
-    @if(demo)
-    {
-        <app-main-layout [demo]="true" />
-    }
-    @else
-    {
-        <app-main-layout />
-    }
+    <app-main-layout />
 }
