@@ -18,15 +18,20 @@ export class LoginPage
     usuario = '';
     password = '';
 
-    login()
+    login(usuario: string, password: string)
     {
         if(this.ocupado())
         {
             return;
         }
+        if(!usuario.trim() || !password)
+        {
+            this.mensaje.set('Ingrese su usuario y contraseña.');
+            return;
+        }
         this.ocupado.set(true);
         this.mensaje.set('');
-        this.session.login(this.usuario, this.password).subscribe({
+        this.session.login(usuario.trim(), password).subscribe({
             next: () =>
             {
                 this.password = '';
