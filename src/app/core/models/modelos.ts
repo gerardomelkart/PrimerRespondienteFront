@@ -70,12 +70,13 @@ export interface Validacion
     valido: boolean;
     idCarga: string | null;
     totalRegistros: number;
-    errores: { fila: number; campo: string; mensaje: string }[];
-    avisos: string[];
+    errores: { fila: number; campo: string; mensaje: string; valor?: string | null }[];
+    avisos: (string | { fila: number; campo: string; mensaje: string; valor?: string | null })[];
 }
 
 export interface IncidenciaValidacion
 {
+    valor?: string | null;
     tipo: string;
     fila: number | null;
     campo: string;

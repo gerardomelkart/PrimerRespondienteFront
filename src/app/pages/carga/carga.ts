@@ -20,7 +20,14 @@ export class CargaPage
     readonly mensaje = signal('');
     readonly validacion = signal<Validacion | null>(null);
     paginaResultado = 1;
-    readonly filasPorPagina = 20;
+    filasPorPagina = 20;
+    readonly ordenResultado = signal<{ campo: keyof IncidenciaValidacion; ascendente: boolean }>({ campo: 'fila', ascendente: true });
+    readonly columnasResultado: { campo: keyof IncidenciaValidacion; nombre: string }[] = [
+        { campo: 'tipo', nombre: 'Tipo' }, { campo: 'fila', nombre: 'Fila del Excel' },
+        { campo: 'campo', nombre: 'Campo' }, { campo: 'valor', nombre: 'Valor en el Excel' }, { campo: 'mensaje', nombre: 'Detalle' }
+    ];
+    private readonly comparador = new Intl.Collator('es-MX', { numeric: true, sensitivity: 'base' });
+    @ViewChild('tablaResultados') private tablaResultados?: ElementRef<HTMLElement>;
     readonly exportando = signal(false);
     readonly incidencias = computed<IncidenciaValidacion[]>(() =>
     {
@@ -29,13 +36,29 @@ export class CargaPage
         {
             return [];
         }
-        const errores = resultado.errores.map(e => ({ tipo: 'Error', fila: e.fila || null, campo: e.campo, mensaje: e.mensaje }));
+        const errores = resultado.errores.map(e => ({ tipo: 'Error', fila: e.fila || null, campo: e.campo, mensaje: e.mensaje, valor: e.valor }));
         const avisos = resultado.avisos.map(aviso =>
         {
+            if(typeof aviso !== 'string')
+            {
+                return { ...aviso, tipo: 'Observación', fila: aviso.fila || null };
+            }
             const partes = /^Fila (\d+):\s*(.*)$/.exec(aviso);
-            return { tipo: 'Observación', fila: partes ? Number(partes[1]) : null, campo: '', mensaje: partes ? partes[2] : aviso };
+            return { tipo: 'Observación', fila: partes ? Number(partes[1]) : null, campo: '', valor: null, mensaje: partes ? partes[2] : aviso };
         });
-        return [...errores, ...avisos].sort((a, b) => (a.fila ?? Number.MAX_SAFE_INTEGER) - (b.fila ?? Number.MAX_SAFE_INTEGER));
+        const orden = this.ordenResultado();
+        return [...errores, ...avisos].sort((a, b) =>
+        {
+            const primero = a[orden.campo];
+            const segundo = b[orden.campo];
+            if(primero == null || segundo == null)
+            {
+                return primero == null ? (segundo == null ? 0 : 1) : -1;
+            }
+            const comparacion = typeof primero === 'number' && typeof segundo === 'number'
+                ? primero - segundo : this.comparador.compare(String(primero), String(segundo));
+            return orden.ascendente ? comparacion : -comparacion;
+        });
     });
 
     get totalPaginas()
@@ -47,6 +70,34 @@ export class CargaPage
     {
         const inicio = (this.paginaResultado - 1) * this.filasPorPagina;
         return this.incidencias().slice(inicio, inicio + this.filasPorPagina);
+    }
+
+    get paginasVisibles()
+    {
+        const inicio = Math.max(1, Math.min(this.paginaResultado - 2, this.totalPaginas - 4));
+        return Array.from({ length: Math.min(5, this.totalPaginas) }, (_, indice) => inicio + indice);
+    }
+
+    irAPagina(pagina: number | null)
+    {
+        this.paginaResultado = Math.min(this.totalPaginas, Math.max(1, Math.trunc(Number(pagina)) || 1));
+        if(this.tablaResultados)
+        {
+            this.tablaResultados.nativeElement.scrollTop = 0;
+        }
+    }
+
+    ordenarResultados(campo: keyof IncidenciaValidacion)
+    {
+        const actual = this.ordenResultado();
+        this.ordenResultado.set({ campo, ascendente: actual.campo === campo ? !actual.ascendente : true });
+        this.irAPagina(1);
+    }
+
+    estadoOrden(campo: keyof IncidenciaValidacion): 'ascending' | 'descending' | 'none'
+    {
+        const actual = this.ordenResultado();
+        return actual.campo === campo ? (actual.ascendente ? 'ascending' : 'descending') : 'none';
     }
 
     readonly aceptada = signal<Carga | null>(null);

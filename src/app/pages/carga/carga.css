@@ -60,3 +60,18 @@
 {
     .resultado-cabecera, .paginacion-resultados { flex-direction: column; align-items: flex-start; }
 }
+
+.orden-columna { display: inline-flex; align-items: center; gap: 10px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-weight: 700; text-align: left; }
+.orden-columna i { color: var(--siiid-guinda); }
+.valor-original { white-space: pre-wrap; min-width: 160px; max-width: 300px; overflow-wrap: anywhere; }
+.paginacion-resultados { flex-wrap: wrap; }
+.paginacion-resultados .resumen-paginacion { flex-wrap: wrap; align-items: center; gap: 14px; font-size: 12px; color: #626b78; }
+.resumen-paginacion label, .salto-pagina { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 12px; white-space: nowrap; }
+.resumen-paginacion select, .salto-pagina input { width: 74px; min-height: 36px; padding: 6px; }
+.paginacion-resultados .botones-paginacion { gap: 4px; flex-wrap: wrap; }
+.botones-paginacion button { min-width: 34px; min-height: 36px; padding: 6px 10px; }
+.botones-paginacion .pagina-actual { background: var(--siiid-guinda); color: white; border-color: var(--siiid-guinda); }
+@media(max-width: 500px)
+{
+    .botones-paginacion button { min-width: 30px; padding: 6px 8px; }
+}

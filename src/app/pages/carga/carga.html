@@ -80,15 +80,28 @@
         </div>
         @if(incidencias().length)
         {
-            <div class="tabla-scroll"><table class="tabla-validacion"><caption class="visually-hidden">Errores y observaciones de la validación</caption><thead><tr><th scope="col">Tipo</th><th scope="col">Fila del Excel</th><th scope="col">Campo</th><th scope="col">Detalle</th></tr></thead><tbody>
+            <div #tablaResultados class="tabla-scroll"><table class="tabla-validacion"><caption class="visually-hidden">Errores y observaciones de la validación</caption><thead><tr>@for(columna of columnasResultado; track columna.campo)
+                    {
+                        <th scope="col" [attr.aria-sort]="estadoOrden(columna.campo)"><button type="button" class="orden-columna" (click)="ordenarResultados(columna.campo)" [attr.aria-label]="columna.nombre + ': ordenar ' + (estadoOrden(columna.campo) === 'ascending' ? 'descendente' : 'ascendente')">{{ columna.nombre }} <i class="fa-solid" [class.fa-sort]="estadoOrden(columna.campo) === 'none'" [class.fa-sort-up]="estadoOrden(columna.campo) === 'ascending'" [class.fa-sort-down]="estadoOrden(columna.campo) === 'descending'" aria-hidden="true"></i></button></th>
+                    }</tr></thead><tbody>
                 @for(incidencia of incidenciasPagina; track $index)
                 {
-                    <tr><td><span class="tipo-incidencia" [class.es-error]="incidencia.tipo === 'Error'">{{ incidencia.tipo }}</span></td><td>{{ incidencia.fila ?? 'General' }}</td><td>{{ incidencia.campo || '—' }}</td><td>{{ incidencia.mensaje }}</td></tr>
+                    <tr><td><span class="tipo-incidencia" [class.es-error]="incidencia.tipo === 'Error'">{{ incidencia.tipo }}</span></td><td>{{ incidencia.fila ?? 'General' }}</td><td>{{ incidencia.campo || '—' }}</td><td class="valor-original">{{ incidencia.valor == null ? '—' : incidencia.valor === '' ? '(vacío)' : incidencia.valor }}</td><td>{{ incidencia.mensaje }}</td></tr>
                 }
             </tbody></table></div>
             <nav class="paginacion-resultados" aria-label="Páginas del resultado de validación">
-                <span>{{ incidencias().length | number }} resultados · Página {{ paginaResultado }} de {{ totalPaginas }}</span>
-                <div><button type="button" class="secundario" (click)="paginaResultado = paginaResultado - 1" [disabled]="paginaResultado === 1">Anterior</button><button type="button" class="secundario" (click)="paginaResultado = paginaResultado + 1" [disabled]="paginaResultado === totalPaginas">Siguiente</button></div>
+                <div class="resumen-paginacion"><span>{{ (paginaResultado - 1) * filasPorPagina + 1 | number }}–{{ paginaResultado * filasPorPagina > incidencias().length ? (incidencias().length | number) : (paginaResultado * filasPorPagina | number) }} de {{ incidencias().length | number }} resultados</span><label>Filas por página <select aria-label="Filas por página" [(ngModel)]="filasPorPagina" (ngModelChange)="irAPagina(1)"><option [ngValue]="20">20</option><option [ngValue]="50">50</option><option [ngValue]="100">100</option></select></label></div>
+                <div class="botones-paginacion">
+                    <button type="button" class="secundario" (click)="irAPagina(1)" [disabled]="paginaResultado === 1" aria-label="Primera página"><i class="fa-solid fa-angles-left" aria-hidden="true"></i></button>
+                    <button type="button" class="secundario" (click)="irAPagina(paginaResultado - 1)" [disabled]="paginaResultado === 1" aria-label="Página anterior"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                    @for(pagina of paginasVisibles; track pagina)
+                    {
+                        <button type="button" class="secundario numero-pagina" [class.pagina-actual]="pagina === paginaResultado" [attr.aria-current]="pagina === paginaResultado ? 'page' : null" [attr.aria-label]="'Página ' + pagina" (click)="irAPagina(pagina)">{{ pagina }}</button>
+                    }
+                    <button type="button" class="secundario" (click)="irAPagina(paginaResultado + 1)" [disabled]="paginaResultado === totalPaginas" aria-label="Página siguiente"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                    <button type="button" class="secundario" (click)="irAPagina(totalPaginas)" [disabled]="paginaResultado === totalPaginas" aria-label="Última página"><i class="fa-solid fa-angles-right" aria-hidden="true"></i></button>
+                </div>
+                <label class="salto-pagina">Ir a página <input aria-label="Ir a página" type="number" [min]="1" [max]="totalPaginas" [ngModel]="paginaResultado" (ngModelChange)="irAPagina($event)"> de {{ totalPaginas }}</label>
             </nav>
             <p class="nota-periodo">El Excel incluye todos los errores y observaciones, de todas las páginas.</p>
         }
