@@ -10,14 +10,16 @@
     @if(mensaje()) { <p class="aviso" role="alert">{{ mensaje() }}</p> }
     <section class="tarjeta">
         <h2>Filtros de consulta</h2>
-        <form class="filtros-informe" (ngSubmit)="consultar()">
+        <div class="filtros-informe">
             <div><label for="anioInforme">Año</label><select id="anioInforme" name="anio" [(ngModel)]="anio" (ngModelChange)="cambiarAnio()" [disabled]="ocupado() || exportando()">@for(a of anios; track a) { <option [value]="a">{{ a }}</option> }</select></div>
             <div><label for="periodoInforme">Periodo de entrega</label><select id="periodoInforme" name="periodo" [(ngModel)]="periodo" (ngModelChange)="cambiarFiltros()" [disabled]="ocupado() || exportando()"><option value="">Todos los periodos del año</option>@for(p of periodos; track p.inicio) { <option [value]="p.inicio.slice(0, 10) + '|' + p.fin.slice(0, 10)">{{ p.nombre }}</option> }</select></div>
+            @if(opciones()?.acceso?.puedeElegirCorporacion)
+            {
             <div><label for="corporacionInforme">Corporación</label><select id="corporacionInforme" name="corporacion" [(ngModel)]="corporacion" (ngModelChange)="cambiarFiltros()" [disabled]="ocupado() || exportando() || !opciones()?.acceso?.puedeElegirCorporacion">@if(opciones()?.acceso?.puedeElegirCorporacion) { <option value="">Todas las de mi acceso</option> }@for(c of opciones()?.corporaciones ?? []; track c.codigo) { <option [value]="c.codigo">{{ c.nombre }}</option> }</select></div>
+            }
             <div><label for="entidadInforme">Entidad de detención</label><select id="entidadInforme" name="entidad" [(ngModel)]="entidad" (ngModelChange)="cambiarFiltros()" [disabled]="ocupado() || exportando() || !opciones()?.acceso?.puedeElegirEntidad">@if(opciones()?.acceso?.puedeElegirEntidad) { <option value="">Todas las de mi acceso</option> }@for(e of opciones()?.entidades ?? []; track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }</select></div>
-            <button type="submit" class="primario" [disabled]="ocupado() || exportando() || !opciones()">Consultar</button>
             <button type="button" class="secundario" (click)="descargar()" [disabled]="ocupado() || exportando() || !reporte()?.totales?.registros"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar Excel</button>
-        </form>
+        </div>
         <small>Los periodos y corporaciones se obtienen de las entregas accesibles, incluidas las quincenas cerradas.</small>
     </section>
     @if(reporte(); as informe)
@@ -54,6 +56,6 @@
             </section>
         }
     }
-    @else if(opciones() && !ocupado()) { <p class="muted">Seleccione los filtros y presione Consultar.</p> }
+    @else if(opciones() && !ocupado()) { <p class="muted">Seleccione los filtros para consultar el reporte.</p> }
 }
 <dialog #espera class="espera-informe" aria-labelledby="titulo-espera-informe" aria-busy="true" (cancel)="$event.preventDefault()"><div tabindex="-1" autofocus><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><h2 id="titulo-espera-informe">{{ exportando() ? 'Generando reporte Excel' : 'Consultando información' }}</h2><p>Espere un momento. No cierre esta ventana.</p></div></dialog>

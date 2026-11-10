@@ -108,6 +108,7 @@ export class InformesPage
     {
         this.reporte.set(null);
         this.mensaje.set('');
+        this.consultar();
     }
 
     private parametros(pagina: number)

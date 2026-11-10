@@ -1,5 +1,5 @@
 :host { display: block; }
-.filtros-informe { display: grid; grid-template-columns: 0.7fr 1.5fr 1fr 1fr auto auto; gap: 16px; align-items: end; margin-bottom: 16px; }
+.filtros-informe { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: end; margin-bottom: 16px; }
 .filtros-informe label { display: block; margin-bottom: 8px; font-weight: 600; }
 .filtros-informe select { width: 100%; }
 .indicadores-informe { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
