@@ -1,4 +1,4 @@
-@if(!session.sesion())
+@if(!session.sesion() || session.sesion()?.usuario?.debeCambiarPassword)
 {
     <app-login />
 }

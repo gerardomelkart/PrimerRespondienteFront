@@ -15,6 +15,9 @@ export class LoginPage
     readonly session = inject(SessionService);
     readonly ocupado = signal(false);
     readonly mensaje = signal('');
+    nueva = '';
+    confirmacion = '';
+    actual = '';
     usuario = '';
     password = '';
 
@@ -35,6 +38,26 @@ export class LoginPage
             next: () =>
             {
                 this.password = '';
+                this.ocupado.set(false);
+            },
+            error: error => this.error(error)
+        });
+    }
+
+    cambiarPassword()
+    {
+        if(this.ocupado()) return;
+        if(this.nueva !== this.confirmacion)
+        {
+            this.mensaje.set('Las contraseñas no coinciden.');
+            return;
+        }
+        this.ocupado.set(true);
+        this.mensaje.set('');
+        this.session.cambiarPassword(this.actual, this.nueva, this.confirmacion).subscribe({
+            next: () =>
+            {
+                this.actual = this.nueva = this.confirmacion = '';
                 this.ocupado.set(false);
             },
             error: error => this.error(error)

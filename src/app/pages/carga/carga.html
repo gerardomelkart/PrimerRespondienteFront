@@ -126,6 +126,10 @@
     <div class="acuse-acciones">
         <button type="button" class="secundario" (click)="cerrarAcuse()" [disabled]="ocupado()">{{ aceptada() ? 'Cerrar' : 'Volver a los resultados' }}</button>
         <button type="button" class="secundario" (click)="descargarAcuse()" [disabled]="!acuseUrl() || ocupado()"><i class="fa-solid fa-download" aria-hidden="true"></i> {{ aceptada() ? 'Descargar acuse PDF' : 'Descargar vista previa' }}</button>
+        @if(!aceptada())
+        {
+            <label><input type="checkbox" [(ngModel)]="aceptaNoLocalizados"> He revisado las observaciones y acepto los registros no localizados en RND. Estos registros no se enviarán a fiscalías.</label>
+        }
         @if(!aceptada()) { <button type="button" class="primario" (click)="confirmar()" [disabled]="ocupado() || !acuseUrl()">{{ ocupado() ? 'Confirmando…' : 'Confirmar entrega' }}</button> }
     </div>
 </dialog>

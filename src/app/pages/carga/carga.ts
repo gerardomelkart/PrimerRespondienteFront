@@ -28,6 +28,7 @@ export class CargaPage
     private nombreAcuse = 'Acuse_PrimerRespondiente.pdf';
     @ViewChild('modalAcuse') private modalAcuse?: ElementRef<HTMLDialogElement>;
     private readonly cargasService = inject(CargasService);
+    aceptaNoLocalizados = false;
     readonly ocupado = signal(false);
     readonly mensaje = signal('');
     readonly validacion = signal<Validacion | null>(null);
@@ -203,6 +204,7 @@ export class CargaPage
     }
     elegir(archivo: File | null)
     {
+        this.aceptaNoLocalizados = false;
         this.validacion.set(null);
         this.aceptada.set(null);
         this.mensaje.set('');
@@ -230,6 +232,7 @@ export class CargaPage
 
     cambiarPeriodo()
     {
+        this.aceptaNoLocalizados = false;
         this.validacion.set(null);
         this.aceptada.set(null);
     }
@@ -251,6 +254,7 @@ export class CargaPage
         }
         this.ocupado.set(true);
         this.mensaje.set('');
+        this.aceptaNoLocalizados = false;
         this.validacion.set(null);
         this.aceptada.set(null);
         this.cargasService.validar(this.archivo, this.idPeriodo!, this.institucion).subscribe({
@@ -279,11 +283,12 @@ export class CargaPage
             return;
         }
         this.ocupado.set(true);
-        this.cargasService.confirmar(id).subscribe({
+        this.cargasService.confirmar(id, this.aceptaNoLocalizados).subscribe({
             next: carga =>
             {
                 this.aceptada.set(carga);
-                this.validacion.set(null);
+                this.aceptaNoLocalizados = false;
+        this.validacion.set(null);
                 this.archivo = null;
                 if(this.selectorArchivo)
                 {

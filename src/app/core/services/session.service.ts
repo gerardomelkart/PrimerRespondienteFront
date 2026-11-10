@@ -14,6 +14,12 @@ export class SessionService
         return this.http.post<Sesion>('api/auth/login', { usuario, password }).pipe(tap(sesion => this.sesion.set(sesion)));
     }
 
+    cambiarPassword(passwordActual: string, passwordNueva: string, confirmacion: string)
+    {
+        return this.http.post<Sesion>('api/auth/cambiar-password', { passwordActual, passwordNueva, confirmacion })
+            .pipe(tap(sesion => this.sesion.set(sesion)));
+    }
+
     cambiarAcceso(idAcceso: number)
     {
         return this.http.post<Sesion>('api/auth/acceso', { idAcceso }).pipe(tap(sesion => this.sesion.set(sesion)));

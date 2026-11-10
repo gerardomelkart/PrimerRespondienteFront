@@ -11,6 +11,23 @@
         <div class="access-ornament access-ornament-left" aria-hidden="true"></div>
         <div class="access-ornament access-ornament-right" aria-hidden="true"></div>
 
+        @if(session.sesion()?.usuario?.debeCambiarPassword)
+        {
+            <form ngNativeValidate class="access-card" (ngSubmit)="cambiarPassword()" [attr.aria-busy]="ocupado()">
+                <div class="access-heading"><h1>Cambiar contraseña</h1><p>Antes de continuar, registre una nueva contraseña.</p></div>
+                <label class="access-label" for="actual">Contraseña actual</label>
+                <div class="access-field"><input id="actual" name="actual" type="password" [(ngModel)]="actual" autocomplete="current-password" required maxlength="200" [disabled]="ocupado()"></div>
+                <label class="access-label" for="nueva">Nueva contraseña (mínimo 12 caracteres)</label>
+                <div class="access-field"><input id="nueva" name="nueva" type="password" [(ngModel)]="nueva" autocomplete="new-password" required minlength="12" maxlength="72" [disabled]="ocupado()"></div>
+                <label class="access-label" for="confirmacion">Confirmar nueva contraseña</label>
+                <div class="access-field"><input id="confirmacion" name="confirmacion" type="password" [(ngModel)]="confirmacion" autocomplete="new-password" required minlength="12" maxlength="72" [disabled]="ocupado()"></div>
+                @if(mensaje()) { <div class="access-error" role="alert">{{ mensaje() }}</div> }
+                <button type="submit" class="access-submit" [disabled]="ocupado()">{{ ocupado() ? 'Guardando…' : 'Guardar contraseña' }}</button>
+                <button type="button" class="access-submit" (click)="session.cerrar(); actual = nueva = confirmacion = ''; mensaje.set('')" [disabled]="ocupado()">Cerrar sesión</button>
+            </form>
+        }
+        @else
+        {
         <form ngNativeValidate class="access-card" (ngSubmit)="login(campoUsuario.value, campoPassword.value)" aria-labelledby="access-title" [attr.aria-busy]="ocupado()">
             <div class="access-heading">
                 <span class="access-eyebrow">ACCESO AL SISTEMA</span>
@@ -46,6 +63,7 @@
                 <small>Acceso exclusivo para usuarios autorizados</small>
             </div>
         </form>
+        }
 
         <footer class="access-footer">
             <span>Secretariado Ejecutivo del Sistema Nacional de Seguridad Pública</span>

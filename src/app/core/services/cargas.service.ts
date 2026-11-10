@@ -30,9 +30,9 @@ export class CargasService
         return this.http.post(`${this.base}/cargas/validacion/excel`, { filas }, { responseType: 'blob' });
     }
 
-    confirmar(idCarga: string)
+    confirmar(idCarga: string, aceptaNoLocalizados: boolean)
     {
-        return this.http.post<Carga>(`${this.base}/cargas/confirmar`, { idCarga });
+        return this.http.post<Carga>(`${this.base}/cargas/confirmar`, { idCarga, aceptaNoLocalizados });
     }
 
     descargar(ruta: string)

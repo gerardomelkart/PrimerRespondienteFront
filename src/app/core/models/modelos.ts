@@ -32,6 +32,7 @@ export interface CatalogosUsuarios
 
 export interface Usuario
 {
+    debeCambiarPassword: boolean;
     activo?: boolean;
     idAcceso?: number;
     accesos?: AccesoUsuario[];
