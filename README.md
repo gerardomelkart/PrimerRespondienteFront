@@ -1,5 +1,17 @@
 # Primer Respondiente
 
+
+## Reporte primer respondiente — estado actual
+
+Implementado con datos reales de entregas confirmadas y vigentes: filtros por quincena,
+corporación y entidad; resumen, detalle paginado y descarga Excel con todas las filas filtradas.
+La API aplica el alcance del acceso activo tanto en catálogos como en consulta y exportación.
+El reporte no consulta de nuevo RND ni incluye respuestas de fiscalías. Reporte completo continúa
+pendiente. No requiere migración nueva: usar la BD con las migraciones existentes hasta 009.
+La guía de prueba está en docs/pruebas-reporte-primer-respondiente.md del repositorio de API.
+Las notas de entregas anteriores que aparecen abajo se conservan como historial de desarrollo.
+
+
 Interfaz Angular del primer módulo de Eficiencia Ministerial. Presenta el acceso al sistema, la captura por Excel y las pantallas iniciales de consulta y administración, con identidad visual basada en el SIIID.
 
 ## Proyecto Eficiencia Ministerial
@@ -12,7 +24,7 @@ Esta versión incorpora las primeras reglas confirmadas del cuestionario: usuari
 
 | Repositorio | Responsabilidad | Tecnología |
 | --- | --- | --- |
-| [PrimerRespondienteFront](https://github.com/gerardomelkart/PrimerRespondienteFront) | Interfaz de acceso, captura por Excel, navegación e informes provisionales. | Angular, TypeScript, Bootstrap |
+| [PrimerRespondienteFront](https://github.com/gerardomelkart/PrimerRespondienteFront) | Interfaz de acceso, captura por Excel, navegación y reporte primer respondiente con datos reales. | Angular, TypeScript, Bootstrap |
 | [EficienciaMinisterialApi](https://github.com/gerardomelkart/EficienciaMinisterialApi) | Autenticación, autorización, validaciones, recepción de archivos y acceso a datos. | C#, ASP.NET Core, .NET 10 |
 | [EficienciaMinisterialBD](https://github.com/gerardomelkart/EficienciaMinisterialBD) | Esquemas, tablas, catálogos, índices y secuencia de folios. | SQL Server 2019 o superior |
 
@@ -25,7 +37,7 @@ El flujo implementado para las corporaciones permite descargar una plantilla, ca
 El flujo previsto para fiscalías consiste en descargar una plantilla con información de referencia y completar los campos de seguimiento ministerial. Esa segunda etapa todavía no está implementada.
 
 - **Disponible:** autenticación JWT, selección de acceso, alta/edición/activación de usuarios, carga y validación de Excel, confirmación con folio, acuse y registros de operación.
-- **Provisional:** pantallas de informes “Reporte primer respondiente” y “Reporte completo”, sin consultas ni indicadores definitivos.
+- **Informes:** Reporte primer respondiente con datos reales y Excel; Reporte completo pendiente del seguimiento de fiscalías.
 - **Pendiente:** catálogo definitivo de fiscalías, plantilla de seguimiento, cruces automáticos, control de quincenas y reportes operativos.
 
 Las futuras conexiones con SIIID e Ingesta de Datos no están implementadas. El cruce con RND/RND_FA, a partir de las copias generadas por DBBridge, también está pendiente. No existe actualmente un integrador entre estos sistemas.
@@ -58,7 +70,7 @@ No hay credenciales predeterminadas. Las cuentas se autentican contra la API y s
 | Acceso | Autenticación JWT y sesión en memoria. Recargar o cerrar la pestaña requiere volver a ingresar. |
 | Inicio | Bienvenida y acceso a las operaciones del perfil. Se regresa desde la marca de la barra de navegación o desde el menú de la cuenta. |
 | Carga de información | Plantilla, selección/arrastre XLSX, periodo quincenal desde BD, errores por fila, observaciones, confirmación, folio y acuse. Disponible para primer respondiente y superusuario; este último elige la corporación. |
-| Informes | Submenú con “Reporte primer respondiente” y “Reporte completo”. Ambas muestran el estado «En preparación», sin registros ni exportaciones. El primer respondiente no tiene acceso al reporte completo. |
+| Informes | Submenú con “Reporte primer respondiente” y “Reporte completo”. Reporte primer respondiente consulta datos reales y exporta Excel; Reporte completo continúa en preparación. El primer respondiente no tiene acceso al reporte completo. |
 | Usuarios | Listado de cuentas activas/inactivas, búsqueda, alta, edición y cambio de estado. Asignación de varios perfiles, instituciones y entidades. Disponible para superusuario. |
 
 La vista anterior de Entregas fue retirada de la navegación. Los endpoints de consulta y descarga siguen existiendo en la API, pero los informes del front aún no los utilizan. La API comprueba los permisos; ocultar opciones de menú no sustituye la autorización del servidor.
