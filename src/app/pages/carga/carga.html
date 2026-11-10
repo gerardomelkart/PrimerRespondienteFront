@@ -80,7 +80,7 @@
         </div>
         @if(incidencias().length)
         {
-            <div #tablaResultados class="tabla-scroll"><table class="tabla-validacion"><caption class="visually-hidden">Errores, observaciones y resultados del cruce</caption><thead><tr>@for(columna of columnasResultado; track columna.campo)
+            <div #tablaResultados class="tabla-scroll"><table class="tabla-validacion"><caption class="visually-hidden">Errores y observaciones de la validación</caption><thead><tr>@for(columna of columnasResultado; track columna.campo)
                     {
                         <th scope="col" [attr.aria-sort]="estadoOrden(columna.campo)"><button type="button" class="orden-columna" (click)="ordenarResultados(columna.campo)" [attr.aria-label]="columna.nombre + ': ordenar ' + (estadoOrden(columna.campo) === 'ascending' ? 'descendente' : 'ascendente')">{{ columna.nombre }} <i class="fa-solid" [class.fa-sort]="estadoOrden(columna.campo) === 'none'" [class.fa-sort-up]="estadoOrden(columna.campo) === 'ascending'" [class.fa-sort-down]="estadoOrden(columna.campo) === 'descending'" aria-hidden="true"></i></button></th>
                     }</tr></thead><tbody>
@@ -103,7 +103,7 @@
                 </div>
                 <label class="salto-pagina">Ir a página <input aria-label="Ir a página" type="number" [min]="1" [max]="totalPaginas" [ngModel]="paginaResultado" (ngModelChange)="irAPagina($event)"> de {{ totalPaginas }}</label>
             </nav>
-            <p class="nota-periodo">El Excel incluye los errores, observaciones y resultados del cruce de todas las páginas.</p>
+            <p class="nota-periodo">El Excel incluye todos los errores y observaciones, con su detalle de cruce, de todas las páginas.</p>
         }
         @if(resultado.valido) { <p>Al confirmar se registrará la entrega y se generará su folio.</p><button type="button" class="primario" (click)="abrirAcuse(resultado.idCarga!)" [disabled]="ocupado()">Revisar acuse y confirmar</button> }
     </section>
@@ -131,5 +131,13 @@
             <label><input type="checkbox" [(ngModel)]="aceptaNoLocalizados"> He revisado las observaciones y acepto los registros no localizados en RND. Estos registros no se enviarán a fiscalías.</label>
         }
         @if(!aceptada()) { <button type="button" class="primario" (click)="confirmar()" [disabled]="ocupado() || !acuseUrl()">{{ ocupado() ? 'Confirmando…' : 'Confirmar entrega' }}</button> }
+    </div>
+</dialog>
+
+<dialog #modalProcesando class="loading-carga" aria-labelledby="titulo-procesando" aria-describedby="detalle-procesando" aria-busy="true" (cancel)="$event.preventDefault()">
+    <div class="loading-carga-contenido" tabindex="-1" autofocus>
+        <span class="loading-carga-spinner" aria-hidden="true"></span>
+        <h2 id="titulo-procesando">Procesando información</h2>
+        <p id="detalle-procesando">Espere un momento. No cierre esta ventana.</p>
     </div>
 </dialog>

@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, afterRenderEffect, computed, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
@@ -30,6 +30,7 @@ export class CargaPage
     private readonly cargasService = inject(CargasService);
     aceptaNoLocalizados = false;
     readonly ocupado = signal(false);
+    private readonly modalProcesando = viewChild<ElementRef<HTMLDialogElement>>('modalProcesando');
     readonly mensaje = signal('');
     readonly validacion = signal<Validacion | null>(null);
     paginaResultado = 1;
@@ -60,9 +61,7 @@ export class CargaPage
             return { tipo: 'Observación', fila: partes ? Number(partes[1]) : null, campo: '', valor: null, mensaje: partes ? partes[2] : aviso };
         });
         const orden = this.ordenResultado();
-        const filasConIncidencia = new Set([...errores, ...avisos].map(i => i.fila));
-        const cruces = (resultado.cruces ?? []).filter(c => !filasConIncidencia.has(c.fila));
-        return [...errores, ...avisos, ...cruces].sort((a, b) =>
+        return [...errores, ...avisos].sort((a, b) =>
         {
             const primero = a[orden.campo];
             const segundo = b[orden.campo];
@@ -124,6 +123,19 @@ export class CargaPage
 
     constructor()
     {
+        afterRenderEffect(() =>
+        {
+            const modal = this.modalProcesando()?.nativeElement;
+            if(!modal) return;
+            if(this.ocupado() || this.exportando())
+            {
+                if(!modal.open) modal.showModal();
+            }
+            else if(modal.open)
+            {
+                modal.close();
+            }
+        });
         this.cargasService.catalogos().subscribe({
             next: datos =>
             {

@@ -102,3 +102,12 @@
 }
 
 .detalle-cruce { white-space: pre-line; min-width: 360px; overflow-wrap: anywhere; }
+
+.loading-carga { border: 0; padding: 0; border-radius: 14px; max-width: min(440px, calc(100vw - 40px)); width: 100%; box-shadow: 0 20px 70px #0005; }
+.loading-carga::backdrop { background: #17202bb3; }
+.loading-carga-contenido { padding: 36px 28px; text-align: center; outline: none; }
+.loading-carga h2 { margin: 20px 0 10px; font-size: 21px; color: var(--siiid-guinda); }
+.loading-carga p { margin: 0; color: #56616d; line-height: 1.6; }
+.loading-carga-spinner { display: inline-block; width: 46px; height: 46px; border: 4px solid #eee5e8; border-top-color: var(--siiid-guinda); border-radius: 50%; animation: carga-girar 1s linear infinite; }
+@keyframes carga-girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .loading-carga-spinner { animation: none; } }
