@@ -244,6 +244,17 @@ export class CargaPage
         }
     }
 
+    nuevaCarga()
+    {
+        if(this.ocupado() || this.exportando()) return;
+        this.cerrarAcuse();
+        this.quitarArchivo();
+        this.arrastrando = false;
+        this.paginaResultado = 1;
+        this.ordenResultado.set({ campo: 'fila', ascendente: true });
+        setTimeout(() => document.getElementById('datos-entrega')?.focus());
+    }
+
     cambiarPeriodo()
     {
         this.aceptaNoLocalizados = false;

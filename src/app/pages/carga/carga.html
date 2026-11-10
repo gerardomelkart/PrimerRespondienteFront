@@ -4,8 +4,10 @@
     <button type="button" class="secundario" (click)="descargar('plantilla', 'Plantilla_PrimerRespondiente.xlsx')"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button>
 </div>
 <div class="progreso"><span [class.actual]="!validacion() && !aceptada()">1. Seleccionar archivo</span><span [class.actual]="validacion()">2. Revisar validación</span><span [class.actual]="aceptada()">3. Folio y acuse</span></div>
+@if(!validacion() && !aceptada())
+{
 <section class="tarjeta">
-    <h2>Datos de la entrega</h2>
+    <h2 id="datos-entrega" tabindex="-1">Datos de la entrega</h2>
     <div class="datos-entrega">
         <div class="corporacion-entrega">
             @if(session.sesion()!.usuario.rol === 'SUPER_USUARIO')
@@ -68,9 +70,15 @@
     </div>
     <div class="acciones"><button type="button" class="primario" (click)="validar()" [disabled]="!archivo || !idPeriodo || ocupado() || !catalogos()">{{ ocupado() ? 'Procesando…' : 'Validar archivo' }}</button></div>
 </section>
+}
 @if(validacion(); as resultado)
 {
     <section id="resultado" class="tarjeta resultado" aria-live="polite">
+        @if(!resultado.valido)
+        {
+            <div class="aviso" role="alert"><strong>La carga no puede continuar porque hay datos que revisar.</strong><p>Revise los errores, corrija el archivo y vuelva a cargarlo. No se ha confirmado la entrega.</p></div>
+        }
+        <div class="acciones"><button type="button" class="secundario" (click)="nuevaCarga()" [disabled]="ocupado() || exportando()"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Regresar y hacer otra carga</button></div>
         <div class="resultado-cabecera">
             <div><h2>{{ resultado.valido ? 'Archivo validado' : 'Revisa los errores del archivo' }}</h2><p>{{ resultado.totalRegistros | number }} registros válidos · {{ resultado.errores.length | number }} errores · {{ resultado.avisos.length | number }} observaciones</p></div>
             @if(incidencias().length)
