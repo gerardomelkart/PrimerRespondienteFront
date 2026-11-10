@@ -35,7 +35,7 @@ export class CargaPage
     readonly validacion = signal<Validacion | null>(null);
     paginaResultado = 1;
     filasPorPagina = 20;
-    readonly ordenResultado = signal<{ campo: keyof IncidenciaValidacion; ascendente: boolean }>({ campo: 'fila', ascendente: true });
+    readonly ordenResultado = signal<{ campo: keyof IncidenciaValidacion; ascendente: boolean }>({ campo: 'tipo', ascendente: true });
     readonly columnasResultado: { campo: keyof IncidenciaValidacion; nombre: string }[] = [
         { campo: 'tipo', nombre: 'Tipo' }, { campo: 'fila', nombre: 'Fila del Excel' },
         { campo: 'campo', nombre: 'Campo' }, { campo: 'valor', nombre: 'Valor en el Excel' }, { campo: 'mensaje', nombre: 'Detalle' }, { campo: 'cruce', nombre: 'Resultado del cruce' }
@@ -71,7 +71,8 @@ export class CargaPage
             }
             const comparacion = typeof primero === 'number' && typeof segundo === 'number'
                 ? primero - segundo : this.comparador.compare(String(primero), String(segundo));
-            return orden.ascendente ? comparacion : -comparacion;
+            return (orden.ascendente ? comparacion : -comparacion)
+                || (a.fila ?? Number.MAX_SAFE_INTEGER) - (b.fila ?? Number.MAX_SAFE_INTEGER);
         });
     });
 
@@ -251,7 +252,7 @@ export class CargaPage
         this.quitarArchivo();
         this.arrastrando = false;
         this.paginaResultado = 1;
-        this.ordenResultado.set({ campo: 'fila', ascendente: true });
+        this.ordenResultado.set({ campo: 'tipo', ascendente: true });
         setTimeout(() => document.getElementById('datos-entrega')?.focus());
     }
 
@@ -286,6 +287,7 @@ export class CargaPage
             next: resultado =>
             {
                 this.paginaResultado = 1;
+                this.ordenResultado.set({ campo: 'tipo', ascendente: true });
                 this.validacion.set(resultado);
                 this.ocupado.set(false);
                 if(resultado.valido && resultado.idCarga)
