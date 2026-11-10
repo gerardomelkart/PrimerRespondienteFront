@@ -287,6 +287,11 @@ export class CargaPage
             next: carga =>
             {
                 this.aceptada.set(carga);
+                this.idPeriodo = null;
+                this.cargasService.catalogos().subscribe({
+                    next: datos => this.catalogos.set(datos),
+                    error: error => this.error(error)
+                });
                 this.aceptaNoLocalizados = false;
         this.validacion.set(null);
                 this.archivo = null;
