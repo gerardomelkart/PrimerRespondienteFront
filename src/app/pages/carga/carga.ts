@@ -37,7 +37,7 @@ export class CargaPage
     readonly ordenResultado = signal<{ campo: keyof IncidenciaValidacion; ascendente: boolean }>({ campo: 'fila', ascendente: true });
     readonly columnasResultado: { campo: keyof IncidenciaValidacion; nombre: string }[] = [
         { campo: 'tipo', nombre: 'Tipo' }, { campo: 'fila', nombre: 'Fila del Excel' },
-        { campo: 'campo', nombre: 'Campo' }, { campo: 'valor', nombre: 'Valor en el Excel' }, { campo: 'mensaje', nombre: 'Detalle' }
+        { campo: 'campo', nombre: 'Campo' }, { campo: 'valor', nombre: 'Valor en el Excel' }, { campo: 'mensaje', nombre: 'Detalle' }, { campo: 'cruce', nombre: 'Resultado del cruce' }
     ];
     private readonly comparador = new Intl.Collator('es-MX', { numeric: true, sensitivity: 'base' });
     @ViewChild('tablaResultados') private tablaResultados?: ElementRef<HTMLElement>;
@@ -49,8 +49,8 @@ export class CargaPage
         {
             return [];
         }
-        const errores = resultado.errores.map(e => ({ tipo: 'Error', fila: e.fila || null, campo: e.campo, mensaje: e.mensaje, valor: e.valor }));
-        const avisos = resultado.avisos.map(aviso =>
+        const errores = resultado.errores.map<IncidenciaValidacion>(e => ({ tipo: 'Error', fila: e.fila || null, campo: e.campo, mensaje: e.mensaje, valor: e.valor, cruce: e.cruce }));
+        const avisos = resultado.avisos.map<IncidenciaValidacion>(aviso =>
         {
             if(typeof aviso !== 'string')
             {
@@ -60,7 +60,9 @@ export class CargaPage
             return { tipo: 'Observación', fila: partes ? Number(partes[1]) : null, campo: '', valor: null, mensaje: partes ? partes[2] : aviso };
         });
         const orden = this.ordenResultado();
-        return [...errores, ...avisos].sort((a, b) =>
+        const filasConIncidencia = new Set([...errores, ...avisos].map(i => i.fila));
+        const cruces = (resultado.cruces ?? []).filter(c => !filasConIncidencia.has(c.fila));
+        return [...errores, ...avisos, ...cruces].sort((a, b) =>
         {
             const primero = a[orden.campo];
             const segundo = b[orden.campo];

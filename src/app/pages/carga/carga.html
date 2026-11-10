@@ -80,13 +80,13 @@
         </div>
         @if(incidencias().length)
         {
-            <div #tablaResultados class="tabla-scroll"><table class="tabla-validacion"><caption class="visually-hidden">Errores y observaciones de la validación</caption><thead><tr>@for(columna of columnasResultado; track columna.campo)
+            <div #tablaResultados class="tabla-scroll"><table class="tabla-validacion"><caption class="visually-hidden">Errores, observaciones y resultados del cruce</caption><thead><tr>@for(columna of columnasResultado; track columna.campo)
                     {
                         <th scope="col" [attr.aria-sort]="estadoOrden(columna.campo)"><button type="button" class="orden-columna" (click)="ordenarResultados(columna.campo)" [attr.aria-label]="columna.nombre + ': ordenar ' + (estadoOrden(columna.campo) === 'ascending' ? 'descendente' : 'ascendente')">{{ columna.nombre }} <i class="fa-solid" [class.fa-sort]="estadoOrden(columna.campo) === 'none'" [class.fa-sort-up]="estadoOrden(columna.campo) === 'ascending'" [class.fa-sort-down]="estadoOrden(columna.campo) === 'descending'" aria-hidden="true"></i></button></th>
                     }</tr></thead><tbody>
                 @for(incidencia of incidenciasPagina; track $index)
                 {
-                    <tr><td><span class="tipo-incidencia" [class.es-error]="incidencia.tipo === 'Error'">{{ incidencia.tipo }}</span></td><td>{{ incidencia.fila ?? 'General' }}</td><td>{{ incidencia.campo || '—' }}</td><td class="valor-original">{{ incidencia.valor == null ? '—' : incidencia.valor === '' ? '(vacío)' : incidencia.valor }}</td><td>{{ incidencia.mensaje }}</td></tr>
+                    <tr><td><span class="tipo-incidencia" [class.es-error]="incidencia.tipo === 'Error'">{{ incidencia.tipo }}</span></td><td>{{ incidencia.fila ?? 'General' }}</td><td>{{ incidencia.campo || '—' }}</td><td class="valor-original">{{ incidencia.valor == null ? '—' : incidencia.valor === '' ? '(vacío)' : incidencia.valor }}</td><td>{{ incidencia.mensaje }}</td><td class="detalle-cruce">{{ incidencia.cruce || '—' }}</td></tr>
                 }
             </tbody></table></div>
             <nav class="paginacion-resultados" aria-label="Páginas del resultado de validación">
@@ -103,7 +103,7 @@
                 </div>
                 <label class="salto-pagina">Ir a página <input aria-label="Ir a página" type="number" [min]="1" [max]="totalPaginas" [ngModel]="paginaResultado" (ngModelChange)="irAPagina($event)"> de {{ totalPaginas }}</label>
             </nav>
-            <p class="nota-periodo">El Excel incluye todos los errores y observaciones, de todas las páginas.</p>
+            <p class="nota-periodo">El Excel incluye los errores, observaciones y resultados del cruce de todas las páginas.</p>
         }
         @if(resultado.valido) { <p>Al confirmar se registrará la entrega y se generará su folio.</p><button type="button" class="primario" (click)="abrirAcuse(resultado.idCarga!)" [disabled]="ocupado()">Revisar acuse y confirmar</button> }
     </section>

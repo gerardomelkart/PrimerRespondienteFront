@@ -100,3 +100,5 @@
     .acuse-acciones button { flex: 1; }
     .entrega-finalizada { align-items: flex-start; flex-direction: column; }
 }
+
+.detalle-cruce { white-space: pre-line; min-width: 360px; overflow-wrap: anywhere; }

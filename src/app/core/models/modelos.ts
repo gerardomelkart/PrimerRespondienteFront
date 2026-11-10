@@ -68,15 +68,17 @@ export interface Carga
 
 export interface Validacion
 {
+    cruces?: IncidenciaValidacion[];
     valido: boolean;
     idCarga: string | null;
     totalRegistros: number;
-    errores: { fila: number; campo: string; mensaje: string; valor?: string | null }[];
-    avisos: (string | { fila: number; campo: string; mensaje: string; valor?: string | null })[];
+    errores: { fila: number; campo: string; mensaje: string; valor?: string | null; cruce?: string | null }[];
+    avisos: (string | { fila: number; campo: string; mensaje: string; valor?: string | null; cruce?: string | null })[];
 }
 
 export interface IncidenciaValidacion
 {
+    cruce?: string | null;
     valor?: string | null;
     tipo: string;
     fila: number | null;
