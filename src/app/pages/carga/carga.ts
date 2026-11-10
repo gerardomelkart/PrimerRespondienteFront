@@ -332,6 +332,21 @@ export class CargaPage
             error: error =>
             {
                 this.error(error);
+                if(error.error?.codigo === 'VALIDACION_ENTREGA')
+                {
+                    this.cerrarAcuse();
+                    const anterior = this.validacion();
+                    if(anterior)
+                    {
+                        this.validacion.set({ ...anterior, valido: false, idCarga: null,
+                            errores: error.error.errores?.length ? error.error.errores
+                                : [{ fila: 0, campo: 'ENTREGA', mensaje: error.error.mensaje }] });
+                        this.paginaResultado = 1;
+                        this.ordenResultado.set({ campo: 'tipo', ascendente: true });
+                    }
+                    setTimeout(() => document.getElementById('resultado')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                    return;
+                }
                 this.errorAcuse.set(error.error?.mensaje ?? 'No se pudo confirmar la entrega. Vuelva a intentarlo.');
             }
         });
