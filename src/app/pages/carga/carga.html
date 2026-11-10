@@ -138,7 +138,7 @@
         {
             <label class="consentimiento-acuse"><input type="checkbox" [(ngModel)]="aceptaNoLocalizados"><span> He revisado las observaciones y acepto los registros no localizados en RND. Estos registros no se enviarán a fiscalías.</span></label>
         }
-        @if(!aceptada()) { <button type="button" class="primario" (click)="confirmar()" [disabled]="ocupado() || !acuseUrl()">{{ ocupado() ? 'Confirmando…' : 'Confirmar entrega' }}</button> }
+        @if(!aceptada()) { <button type="button" class="primario" (click)="confirmar()" [disabled]="ocupado() || !acuseUrl() || !aceptaNoLocalizados">{{ ocupado() ? 'Confirmando…' : 'Confirmar entrega' }}</button> }
     </div>
 </dialog>
 

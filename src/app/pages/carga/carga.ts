@@ -305,7 +305,7 @@ export class CargaPage
     confirmar()
     {
         const id = this.validacion()?.idCarga;
-        if(!id || this.ocupado())
+        if(!id || this.ocupado() || !this.aceptaNoLocalizados)
         {
             return;
         }
