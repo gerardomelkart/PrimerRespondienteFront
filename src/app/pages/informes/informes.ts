@@ -19,6 +19,7 @@ interface Registro
 interface Informe { totales: Totales; resumen: Resumen[]; registros: Registro[]; pagina: number; tamano: number; }
 interface Opciones
 {
+    acceso: { puedeElegirCorporacion: boolean; puedeElegirEntidad: boolean; corporacion: string | null; entidad: number | null };
     periodos: { inicio: string; fin: string; nombre: string }[];
     corporaciones: { codigo: string; nombre: string }[];
     entidades: { id: number; nombre: string }[];
@@ -39,6 +40,11 @@ export class InformesPage
     readonly ocupado = signal(false);
     readonly exportando = signal(false);
     readonly mensaje = signal('');
+    anio = '';
+    orden = 'PeriodoInicio';
+    descendente = true;
+    ordenResumen = 'PeriodoInicio';
+    descendenteResumen = true;
     periodo = '';
     corporacion = '';
     entidad = '';
@@ -74,11 +80,28 @@ export class InformesPage
             next: opciones =>
             {
                 this.opciones.set(opciones);
+                this.anio = this.anios[0] ?? '';
+                if(!opciones.acceso.puedeElegirCorporacion) this.corporacion = opciones.acceso.corporacion ?? '';
+                if(!opciones.acceso.puedeElegirEntidad) this.entidad = String(opciones.acceso.entidad ?? '');
                 this.ocupado.set(false);
                 this.consultar();
             },
             error: error => this.error(error)
         });
+    }
+
+    get anios() { return [...new Set((this.opciones()?.periodos ?? []).map(p => p.inicio.slice(0, 4)))].sort().reverse(); }
+    get periodos() { return (this.opciones()?.periodos ?? []).filter(p => p.inicio.startsWith(this.anio)); }
+    cambiarAnio() { this.periodo = ''; this.cambiarFiltros(); }
+    ordenar(columna: string, resumen = false)
+    {
+        if(resumen) { this.descendenteResumen = this.ordenResumen === columna ? !this.descendenteResumen : false; this.ordenResumen = columna; }
+        else { this.descendente = this.orden === columna ? !this.descendente : false; this.orden = columna; }
+        this.consultar();
+    }
+    indicador(columna: string, resumen = false)
+    {
+        return (resumen ? this.ordenResumen : this.orden) === columna ? ((resumen ? this.descendenteResumen : this.descendente) ? ' ▼' : ' ▲') : ' ↕';
     }
 
     cambiarFiltros()
@@ -89,7 +112,8 @@ export class InformesPage
 
     private parametros(pagina: number)
     {
-        let parametros = new HttpParams().set('pagina', pagina).set('tamano', this.tamano);
+        let parametros = new HttpParams().set('pagina', pagina).set('tamano', this.tamano).set('orden', this.orden).set('descendente', this.descendente).set('ordenResumen', this.ordenResumen).set('descendenteResumen', this.descendenteResumen);
+        if(this.anio) parametros = parametros.set('anio', this.anio);
         if(this.periodo)
         {
             const [inicio, fin] = this.periodo.split('|');
@@ -114,11 +138,11 @@ export class InformesPage
 
     get paginas() { return Math.max(1, Math.ceil((this.reporte()?.totales.registros ?? 0) / this.tamano)); }
 
-    descargar()
+    descargar(tabla = 'ambas')
     {
         if(this.ocupado() || this.exportando() || !this.reporte()?.totales.registros) return;
         this.exportando.set(true);
-        this.descarga = this.http.get(`${this.base}/excel`, { params: this.parametros(1), responseType: 'blob', observe: 'response' }).subscribe({
+        this.descarga = this.http.get(`${this.base}/excel`, { params: this.parametros(1).set('tabla', tabla), responseType: 'blob', observe: 'response' }).subscribe({
             next: respuesta =>
             {
                 const disposicion = respuesta.headers.get('Content-Disposition') ?? '';
