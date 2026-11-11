@@ -17,6 +17,10 @@
                         <i class="fa-solid fa-upload" aria-hidden="true"></i> Carga de información
                     </button>
                 }
+                @if(puedeFiscalias)
+                {
+                    <button type="button" class="nav-link" [class.active]="pagina === 'fiscalias'" (click)="navegar('fiscalias')"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Plantilla de fiscalías</button>
+                }
                 <div class="nav-desplegable">
                     <button id="boton-informes" type="button" class="nav-link" [class.active]="esInforme" [attr.aria-expanded]="desplegable === 'informes'" aria-controls="menu-informes" (click)="alternar('informes')">
                         <i class="fa-solid fa-chart-column" aria-hidden="true"></i> Informes
@@ -79,6 +83,7 @@
     <main class="contenido">
         <div class="ruta">Eficiencia Ministerial <span>/</span> Primer Respondiente <span>/</span> {{ tituloPagina }}</div>
         @if(pagina === 'inicio') { <app-inicio (ir)="navegar($event)" /> }
+        @if(pagina === 'fiscalias' && puedeFiscalias) { <app-fiscalias /> }
         @if(pagina === 'carga' && puedeCargar) { <app-carga /> }
         @if(pagina === 'reporte-primer-respondiente' || (pagina === 'reporte-completo' && usuario.rol !== 'PRIMER_RESPONDIENTE'))
         {

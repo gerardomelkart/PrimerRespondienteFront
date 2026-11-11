@@ -5,11 +5,12 @@ import { SessionService } from '../core/services/session.service';
 import { InicioPage } from '../pages/inicio/inicio';
 import { CargaPage } from '../pages/carga/carga';
 import { UsuariosPage } from '../pages/usuarios/usuarios';
+import { FiscaliasPage } from '../pages/fiscalias/fiscalias';
 import { InformesPage } from '../pages/informes/informes';
 
 @Component({
     selector: 'app-main-layout',
-    imports: [FormsModule, InicioPage, CargaPage, UsuariosPage, InformesPage],
+    imports: [FormsModule, InicioPage, CargaPage, UsuariosPage, InformesPage, FiscaliasPage],
     templateUrl: './main-layout.html',
     styleUrl: './main-layout.css'
 })
@@ -17,7 +18,7 @@ export class MainLayout
 {
     readonly session = inject(SessionService);
     private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
-    pagina: 'inicio' | 'carga' | 'reporte-primer-respondiente' | 'reporte-completo' | 'usuarios' = 'inicio';
+    pagina: 'inicio' | 'carga' | 'reporte-primer-respondiente' | 'reporte-completo' | 'usuarios' | 'fiscalias' = 'inicio';
     desplegable: 'informes' | 'cuenta' | null = null;
     menuAbierto = false;
     readonly cambiandoAcceso = signal(false);
@@ -32,6 +33,8 @@ export class MainLayout
     {
         return this.usuario.rol === 'PRIMER_RESPONDIENTE' || this.usuario.rol === 'SUPER_USUARIO';
     }
+
+    get puedeFiscalias() { return this.usuario.rol === 'SUPER_USUARIO' || (this.usuario.rol === 'FISCALIA' && this.usuario.institucion === 'FGR' && this.usuario.ambito === 'NACIONAL'); }
 
     get esInforme()
     {
@@ -105,6 +108,7 @@ export class MainLayout
             case 'carga': return 'Integrar información';
             case 'reporte-primer-respondiente': return 'Reporte primer respondiente';
             case 'reporte-completo': return 'Reporte completo';
+            case 'fiscalias': return 'Plantilla de fiscalías';
             case 'usuarios': return 'Usuarios';
             default: return 'Inicio';
         }
@@ -112,7 +116,8 @@ export class MainLayout
 
     navegar(pagina: typeof this.pagina)
     {
-        if((pagina === 'carga' && !this.puedeCargar)
+        if((pagina === 'fiscalias' && !this.puedeFiscalias)
+            || (pagina === 'carga' && !this.puedeCargar)
             || (pagina === 'usuarios' && this.usuario.rol !== 'SUPER_USUARIO')
             || (pagina === 'reporte-completo' && this.usuario.rol === 'PRIMER_RESPONDIENTE'))
         {

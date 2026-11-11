@@ -1,0 +1,17 @@
+<span class="etiqueta">FISCALÍAS</span>
+<h1>Plantilla de seguimiento</h1>
+<p class="muted">Descargue los registros para completar el seguimiento ministerial en los campos verdes del Excel.</p>
+@if(mensaje()) { <p class="aviso" role="alert">{{ mensaje() }}</p> }
+<section class="tarjeta">
+    <h2>Descargar plantilla</h2>
+    <div class="filtros">
+        <div><label for="fiscalia">Fiscalía</label><select id="fiscalia" [(ngModel)]="fiscalia" [disabled]="ocupado()">@for(f of opciones()?.fiscalias ?? []; track f.codigo) { <option [value]="f.codigo">{{ f.nombre }}</option> }</select></div>
+        <div><label for="anioFiscalia">Año</label><select id="anioFiscalia" [(ngModel)]="anio" (ngModelChange)="cambiarAnio()" [disabled]="ocupado()">@for(a of anios; track a) { <option [value]="a">{{ a }}</option> }</select></div>
+        <div><label for="periodoFiscalia">Periodo de entrega</label><select id="periodoFiscalia" [(ngModel)]="periodo" [disabled]="ocupado()">@for(p of periodos; track p.inicio) { <option [value]="valor(p)">{{ p.nombre }}</option> }</select></div>
+        <button type="button" class="primario" (click)="descargar()" [disabled]="ocupado() || !periodo"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button>
+    </div>
+    <p class="muted">Incluye entregas confirmadas y vigentes, de fuero federal y localizadas en RND. Se conservan todas las filas reportadas.</p>
+    @if(opciones() && !opciones()!.periodos.length) { <p role="status">No hay periodos con registros disponibles para esta fiscalía.</p> }
+    @if(!opciones() && !ocupado()) { <button type="button" class="secundario" (click)="cargar()">Reintentar</button> }
+</section>
+<dialog #espera class="espera" aria-labelledby="tituloEsperaFiscalia" aria-busy="true" (cancel)="$event.preventDefault()"><div tabindex="-1" autofocus><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><h2 id="tituloEsperaFiscalia">Procesando solicitud</h2><p>Espere un momento.</p></div></dialog>
