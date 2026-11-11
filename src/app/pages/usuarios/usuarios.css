@@ -223,3 +223,8 @@
 .acceso-editor { padding: 1rem; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 8px; }
 .acceso-editor > button { margin-top: 1rem; }
 .acceso-resumen { margin-block: .3rem; min-width: 200px; }
+
+.confirmar-eliminar { border: 0; border-radius: 14px; padding: 28px; width: min(520px, calc(100vw - 48px)); }
+.confirmar-eliminar::backdrop { background: #17202bb3; }
+.acciones-eliminar { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+.eliminar-cuenta { margin: 4px 0; }

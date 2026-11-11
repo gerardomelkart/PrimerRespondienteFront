@@ -38,7 +38,7 @@
                                 <td>{{ usuario.usuario }}</td>
                                 <td>@for(acceso of usuario.accesos; track acceso.id) { <div class="acceso-resumen">{{ descripcion(acceso) }}</div> }</td>
                                 <td><span class="rol-badge">{{ usuario.activo ? 'Activo' : 'Inactivo' }}</span></td>
-                                <td><button type="button" class="secundario" (click)="editar(usuario)" [attr.aria-label]="'Editar usuario ' + usuario.usuario">Editar</button></td>
+                                <td><button type="button" class="secundario" (click)="editar(usuario)" [attr.aria-label]="'Editar usuario ' + usuario.usuario">Editar</button> <button type="button" class="secundario eliminar-cuenta" (click)="pedirEliminar(usuario)" [disabled]="ocupado() || usuario.id === session.sesion()?.usuario?.id" [attr.aria-label]="'Eliminar usuario ' + usuario.usuario"><i class="fa-solid fa-trash" aria-hidden="true"></i> Eliminar</button></td>
                             </tr>
                         }
                         @empty
@@ -117,4 +117,15 @@
             <button type="submit" class="primario" [disabled]="ocupado() || formulario.invalid || cargando()">{{ ocupado() ? 'Guardando…' : 'Guardar usuario' }}</button>
         </div>
     </form>
+</dialog>
+
+<dialog #confirmacionEliminar class="confirmar-eliminar" aria-labelledby="tituloEliminar" (cancel)="$event.preventDefault(); cancelarEliminar()">
+    <h2 id="tituloEliminar">Eliminar cuenta</h2>
+    <p>¿Desea eliminar la cuenta <strong>{{ porEliminar()?.usuario }}</strong> de {{ porEliminar()?.nombre }}?</p>
+    <p>La cuenta dejará de aparecer en Usuarios y ya no podrá ingresar. Se conservarán sus cargas y su historial.</p>
+    @if(errorEliminar()) { <p class="usuarios-mensaje" role="alert">{{ errorEliminar() }}</p> }
+    <div class="acciones-eliminar">
+        <button type="button" class="secundario" [disabled]="ocupado()" (click)="cancelarEliminar()" autofocus>Cancelar</button>
+        <button type="button" class="primario" [disabled]="ocupado()" (click)="eliminar()">{{ ocupado() ? 'Eliminando…' : 'Eliminar cuenta' }}</button>
+    </div>
 </dialog>

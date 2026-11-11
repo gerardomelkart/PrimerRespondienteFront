@@ -14,8 +14,11 @@ import { SessionService } from '../../core/services/session.service';
 export class UsuariosPage
 {
     @ViewChild('editor', { static: true }) private editor!: ElementRef<HTMLDialogElement>;
+    @ViewChild('confirmacionEliminar', { static: true }) private confirmacionEliminar!: ElementRef<HTMLDialogElement>;
+    readonly porEliminar = signal<Usuario | null>(null);
+    readonly errorEliminar = signal('');
     private readonly http = inject(HttpClient);
-    private readonly session = inject(SessionService);
+    readonly session = inject(SessionService);
     readonly ocupado = signal(false);
     readonly cargando = signal(false);
     readonly mensaje = signal('');
@@ -109,6 +112,33 @@ export class UsuariosPage
         this.nuevo = this.usuarioVacio();
         this.mensajeFormulario.set('');
         this.editor.nativeElement.showModal();
+    }
+
+    pedirEliminar(usuario: Usuario)
+    {
+        if(this.ocupado() || usuario.id === this.session.sesion()?.usuario.id) return;
+        this.porEliminar.set(usuario); this.errorEliminar.set('');
+        this.confirmacionEliminar.nativeElement.showModal();
+    }
+
+    cancelarEliminar()
+    {
+        if(this.ocupado()) return;
+        this.confirmacionEliminar.nativeElement.close(); this.porEliminar.set(null);
+    }
+
+    eliminar()
+    {
+        const usuario = this.porEliminar();
+        if(!usuario || this.ocupado()) return;
+        this.ocupado.set(true); this.errorEliminar.set('');
+        this.http.delete<{ mensaje: string }>(`api/usuarios/${usuario.id}`).subscribe({
+            next: respuesta => {
+                this.ocupado.set(false); this.cancelarEliminar();
+                this.mensaje.set(respuesta.mensaje); this.cargarUsuarios();
+            },
+            error: (error: HttpErrorResponse) => { this.ocupado.set(false); this.errorEliminar.set(this.detalleError(error)); }
+        });
     }
 
     editar(usuario: Usuario)
