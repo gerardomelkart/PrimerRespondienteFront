@@ -34,7 +34,7 @@ export class MainLayout
         return this.usuario.rol === 'PRIMER_RESPONDIENTE' || this.usuario.rol === 'SUPER_USUARIO';
     }
 
-    get puedeFiscalias() { return this.usuario.rol === 'SUPER_USUARIO' || (this.usuario.rol === 'FISCALIA' && this.usuario.institucion === 'FGR' && this.usuario.ambito === 'NACIONAL'); }
+    get puedeFiscalias() { return this.usuario.rol === 'SUPER_USUARIO' || (this.usuario.rol === 'FISCALIA' && (this.usuario.ambito === 'NACIONAL' || (this.usuario.ambito === 'ESTATAL' && !!this.usuario.entidad))); }
 
     get esInforme()
     {
@@ -43,6 +43,7 @@ export class MainLayout
 
     descripcionAcceso(acceso: AccesoUsuario)
     {
+        if(acceso.rol === 'FISCALIA') return `Fiscalía · ${acceso.ambito === 'NACIONAL' ? 'Nacional' : 'Entidad ' + acceso.entidad}`;
         return `${acceso.rol.replaceAll('_', ' ')} · ${acceso.institucion || 'Todas las instituciones'} · ${acceso.ambito === 'NACIONAL' ? 'Nacional' : 'Entidad ' + acceso.entidad}`;
     }
 

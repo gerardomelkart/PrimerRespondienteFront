@@ -59,7 +59,7 @@
                     <div id="menu-cuenta" class="nav-panel account-panel">
                         <div class="account-summary">
                             <strong>{{ usuario.nombre }}</strong>
-                            <span>{{ usuario.institucion || 'Todas las instituciones' }}</span>
+                            @if(usuario.rol !== 'FISCALIA') { <span>{{ usuario.institucion || 'Todas las instituciones' }}</span> }
                             <small>{{ usuario.ambito === 'NACIONAL' ? 'Alcance nacional' : 'Entidad ' + usuario.entidad }}</small>
                         </div>
                         @if((usuario.accesos?.length ?? 0) > 1)

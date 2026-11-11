@@ -79,7 +79,7 @@ export class UsuariosPage
     {
         const institucion = this.catalogos().instituciones.find(i => i.codigo === acceso.institucion)?.nombre ?? 'Todas las instituciones';
         const alcance = acceso.ambito === 'NACIONAL' ? 'Nacional' : this.catalogos().entidades.find(e => e.id === acceso.entidad)?.nombre ?? 'Entidad sin catálogo';
-        return `${this.nombrePerfil(acceso.rol)} · ${institucion} · ${alcance}`;
+        return acceso.rol === 'FISCALIA' ? `${this.nombrePerfil(acceso.rol)} · ${alcance}` : `${this.nombrePerfil(acceso.rol)} · ${institucion} · ${alcance}`;
     }
 
     instituciones(acceso: AccesoUsuario)

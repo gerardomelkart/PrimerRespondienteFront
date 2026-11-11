@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 
-interface Opciones { fiscalias: { codigo: string; nombre: string }[]; periodos: { inicio: string; fin: string; nombre: string }[]; }
+interface Opciones { periodos: { inicio: string; fin: string; nombre: string }[]; }
 @Component({
     selector: 'app-fiscalias', imports: [FormsModule], templateUrl: './fiscalias.html', styleUrl: './fiscalias.css'
 })
@@ -14,7 +14,7 @@ export class FiscaliasPage
     readonly opciones = signal<Opciones | null>(null);
     readonly ocupado = signal(false);
     readonly mensaje = signal('');
-    anio = ''; periodo = ''; fiscalia = 'FGR';
+    anio = ''; periodo = '';
     private peticion?: Subscription;
     constructor()
     {
@@ -35,7 +35,7 @@ export class FiscaliasPage
         this.ocupado.set(true); this.mensaje.set('');
         this.peticion = this.http.get<Opciones>('api/fiscalias/catalogos').subscribe({
             next: opciones => { this.opciones.set(opciones); this.anio = this.anios[0] ?? ''; this.cambiarAnio(); this.ocupado.set(false); },
-            error: e => { this.ocupado.set(false); this.mensaje.set(e.status === 403 ? 'Este acceso no tiene permiso para la plantilla federal.' : 'No fue posible obtener los periodos. Intente nuevamente.'); }
+            error: e => { this.ocupado.set(false); this.mensaje.set(e.status === 403 ? 'Este acceso no tiene permiso para la plantilla.' : 'No fue posible obtener los periodos. Intente nuevamente.'); }
         });
     }
     descargar()
@@ -43,7 +43,7 @@ export class FiscaliasPage
         if(this.ocupado() || !this.periodo) return;
         const [inicio, fin] = this.periodo.split('|');
         this.ocupado.set(true); this.mensaje.set('');
-        this.peticion = this.http.get('api/fiscalias/plantilla', { params: new HttpParams().set('inicio', inicio).set('fin', fin).set('fiscalia', this.fiscalia), responseType: 'blob' }).subscribe({
+        this.peticion = this.http.get('api/fiscalias/plantilla', { params: new HttpParams().set('inicio', inicio).set('fin', fin), responseType: 'blob' }).subscribe({
             next: archivo => {
                 const url = URL.createObjectURL(archivo); const enlace = document.createElement('a');
                 const fecha = (v: string) => v.split('-').reverse().join('-');

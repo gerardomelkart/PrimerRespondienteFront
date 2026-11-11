@@ -90,10 +90,14 @@
                             <div class="span-2"><label [for]="'rol' + i">Perfil *</label><select [id]="'rol' + i" [name]="'rol' + i" [(ngModel)]="acceso.rol" required (ngModelChange)="cambiarPerfil(acceso)"><option value="">Seleccione un perfil</option>@for(perfil of perfiles; track perfil.codigo) { <option [value]="perfil.codigo">{{ perfil.nombre }}</option> }</select></div>
                             @if(acceso.rol !== 'SUPER_USUARIO')
                             {
+                                @if(acceso.rol !== 'FISCALIA')
+                                {
                                 <div class="span-2"><label [for]="'institucion' + i">Institución</label><select [id]="'institucion' + i" [name]="'institucion' + i" [(ngModel)]="acceso.institucion" [required]="perfil(acceso)?.requiereInstitucion ?? false" [disabled]="!acceso.rol">
                                     <option [ngValue]="null">{{ acceso.rol === 'CONSULTA' ? 'Todas las instituciones' : 'Seleccione una institución' }}</option>
                                     @for(institucion of instituciones(acceso); track institucion.codigo) { <option [value]="institucion.codigo">{{ institucion.nombre }}</option> }
                                 </select></div>
+                                }
+
                             }
                             <div><label [for]="'ambito' + i">Alcance *</label><select [id]="'ambito' + i" [name]="'ambito' + i" [(ngModel)]="acceso.ambito" required [disabled]="acceso.rol === 'SUPER_USUARIO'" (ngModelChange)="acceso.entidad = null"><option value="">Seleccione un alcance</option>@for(opcion of ambitos(acceso); track opcion.codigo) { <option [value]="opcion.codigo">{{ opcion.nombre }}</option> }</select></div>
                             @if(acceso.ambito === 'ESTATAL')
@@ -106,7 +110,7 @@
                 }
                 <button type="button" class="secundario" [disabled]="nuevo.accesos.length >= 100" (click)="nuevo.accesos.push(accesoVacio())"><i class="fa-solid fa-plus" aria-hidden="true"></i> Agregar acceso</button>
             </fieldset>
-            <p class="permiso-nota">Las instituciones y entidades se obtienen del catálogo del sistema. Las fiscalías estatales se incorporarán cuando el área confirme su catálogo. Al editar accesos se requiere volver a iniciar sesión en esa cuenta.</p>
+            <p class="permiso-nota">Las instituciones y entidades se obtienen del catálogo del sistema. Los usuarios de fiscalía se asignan por entidad o con alcance nacional, sin institución. Al editar accesos se requiere volver a iniciar sesión en esa cuenta.</p>
         </div>
         <div class="drawer-actions">
             <button type="button" class="secundario" [disabled]="ocupado()" (click)="cerrarEditor()">Cancelar</button>
