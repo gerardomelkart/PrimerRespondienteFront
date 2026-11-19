@@ -1,22 +1,18 @@
-<span class="etiqueta">FISCALÍAS</span>
-<h1>Plantilla de seguimiento</h1>
-<p class="muted">Descargue los registros para completar el seguimiento ministerial en los campos verdes del Excel.</p>
 @if(mensaje()) { <p class="aviso" role="alert">{{ mensaje() }}</p> }
-<section class="tarjeta">
-    <h2>Descargar plantilla</h2>
+<div class="titulo"><div><span class="etiqueta">FISCALÍAS</span><h1>Seguimiento ministerial</h1>
+<p class="muted">Seleccione la quincena y valide las respuestas antes de confirmar la entrega.</p></div>
+@if(periodo && !resultado() && !entrega()) {
+<button type="button" class="secundario" (click)="descargar()" [disabled]="ocupado()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button>
+}</div>
+<div class="progreso"><span [class.actual]="!resultado() && !entrega()">1. Seleccionar archivo</span><span [class.actual]="resultado() && !entrega()">2. Revisar validación</span><span [class.actual]="entrega()">3. Folio y acuse</span></div>
+@if(!resultado() && !entrega()) {
+<section class="tarjeta"><h2>Datos de la entrega</h2>
+@if(periodo) {
     <div class="filtros">
         <div><label for="anioFiscalia">Año</label><select id="anioFiscalia" [(ngModel)]="anio" (ngModelChange)="cambiarAnio()" [disabled]="ocupado()">@for(a of anios; track a) { <option [value]="a">{{ a }}</option> }</select></div>
         <div><label for="periodoFiscalia">Periodo de entrega</label><select id="periodoFiscalia" [(ngModel)]="periodo" (ngModelChange)="limpiar()" [disabled]="ocupado()">@for(p of periodos; track p.inicio) { <option [value]="valor(p)">{{ p.nombre }}</option> }</select></div>
-        <button type="button" class="primario" (click)="descargar()" [disabled]="ocupado() || !periodo"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button>
     </div>
-    <p class="muted">Incluye entregas confirmadas y vigentes y localizadas en RND, dentro del alcance territorial de su usuario. Se conservan todas las filas reportadas.</p>
-    @if(opciones() && !opciones()!.periodos.length) { <p role="status">No hay periodos con registros disponibles para esta fiscalía.</p> }
-    @if(!opciones() && !ocupado()) { <button type="button" class="secundario" (click)="cargar()">Reintentar</button> }
-</section>
-@if(periodo) {
-<section class="tarjeta">
-    <h2>Validar respuestas</h2>
-    @if(!entrega()) {
+<p class="nota-periodo">Complete los campos verdes de la plantilla de esta quincena.</p>
     <div class="arrastre" [class.arrastrando]="arrastrando" [class.con-archivo]="archivo" (dragover)="$event.preventDefault(); arrastrando = !ocupado()" (dragleave)="arrastrando = false" (drop)="soltar($event)">
         @if(archivo; as seleccionado)
         {
@@ -35,30 +31,57 @@
         <input #selectorArchivo hidden type="file" aria-label="Plantilla completada de fiscalía" accept=".xlsx" (change)="seleccionar(selectorArchivo.files); selectorArchivo.value = ''" [disabled]="ocupado()">
     </div>
     <div class="acciones"><button type="button" class="primario" (click)="validar()" [disabled]="!archivo || ocupado()">{{ ocupado() ? 'Procesando…' : 'Validar archivo' }}</button></div>
-    }
-    @if(resultado(); as r) {
-        <p role="status">{{ r.errores.length ? 'Revise los datos y vuelva a seleccionar el archivo corregido.' : entrega() ? 'Entrega confirmada.' : 'Validación correcta. Confirme la entrega para obtener su folio.' }}</p>
-        <p>Detenciones precargadas: {{ r.esperados }} · Recibidas: {{ r.recibidos }} · No recibidas: {{ r.noRecibidos }}</p>
-        @if(entrega(); as acuse) {
-            <strong>Folio {{ acuse.folio }}</strong>
-            <button type="button" class="secundario" (click)="descargar(true)" [disabled]="ocupado()">Descargar acuse PDF</button>
-        } @else if(!r.errores.length && r.esperados) {
-            <label><input type="checkbox" style="width:auto" [(ngModel)]="aceptada"> He revisado las respuestas de esta quincena.</label>
-            <button type="button" class="primario" (click)="validar(true)" [disabled]="!aceptada || ocupado()">Confirmar entrega</button>
-        }
-        @if(r.errores.length) {
-            <table><thead><tr><th>Fila del Excel</th><th>Campo</th><th>Detalle</th></tr></thead><tbody>
-                @for(e of r.errores.slice(paginaErrores * 25, (paginaErrores + 1) * 25); track $index) {
-                    <tr><td>{{ e.fila ?? 'General' }}</td><td>{{ e.campo }}</td><td>{{ e.detalle }}</td></tr>
-                }
-            </tbody></table>
-            @if(r.errores.length > 25) {
-                <button type="button" [disabled]="paginaErrores === 0" (click)="paginaErrores = paginaErrores - 1">Anterior</button>
-                <span>Página {{ paginaErrores + 1 }}</span>
-                <button type="button" [disabled]="(paginaErrores + 1) * 25 >= r.errores.length" (click)="paginaErrores = paginaErrores + 1">Siguiente</button>
-            }
-        }
-    }
+
+} @else if(opciones()) { <p>No hay quincenas pendientes con detenciones para su acceso.</p> }
+@if(!opciones() && !ocupado()) { <button type="button" class="secundario" (click)="cargar()">Reintentar</button> }
 </section>
+@if(opciones()?.entregas?.length) {
+<section class="tarjeta"><h2>Entregas confirmadas</h2>
+<div class="tabla-scroll"><table><thead><tr><th>Periodo de entrega</th><th>Folio</th><th>Recibidas</th><th>No recibidas</th><th>Acuse</th></tr></thead><tbody>
+@for(e of opciones()!.entregas; track e.id) { <tr><td>{{ e.inicio | date:'dd/MM/yyyy' }} al {{ e.fin | date:'dd/MM/yyyy' }}</td><td>{{ e.folio }}</td><td>{{ e.recibidos }}</td><td>{{ e.noRecibidos }}</td><td><button type="button" class="secundario" (click)="verEntrega(e)">Ver acuse</button></td></tr> }
+</tbody></table></div></section>
 }
-<dialog #espera class="espera" aria-labelledby="tituloEsperaFiscalia" aria-busy="true" (cancel)="$event.preventDefault()"><div tabindex="-1" autofocus><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><h2 id="tituloEsperaFiscalia">Procesando solicitud</h2><p>Espere un momento.</p></div></dialog>
+}
+@if(!entrega()) { @if(resultado(); as r) {
+<section class="tarjeta resultado" aria-live="polite">
+@if(r.errores.length) { <div class="aviso" role="alert"><strong>La carga no puede continuar porque hay datos que revisar.</strong><p>Corrija los errores del archivo y vuelva a cargarlo.</p></div> }
+<div class="acciones"><button type="button" class="secundario" (click)="limpiar()">Regresar y hacer otra carga</button></div>
+<div class="resultado-cabecera"><div><h2>{{ r.errores.length ? 'Revise los errores del archivo' : 'Archivo validado' }}</h2><p>{{ r.esperados }} detenciones precargadas · {{ r.recibidos }} recibidas · {{ r.noRecibidos }} no recibidas</p></div>
+@if(r.errores.length) { <button type="button" class="secundario" (click)="exportarErrores()">Descargar resultados en Excel</button> }</div>
+@if(r.errores.length) {
+<div class="tabla-scroll"><table class="tabla-validacion"><thead><tr>@for(c of columnas; track c.campo) { <th [attr.aria-sort]="orden === c.campo ? (desc ? 'descending' : 'ascending') : 'none'"><button type="button" class="orden-columna" (click)="ordenarPor(c.campo)">{{ c.nombre }} {{ orden === c.campo ? (desc ? '▼' : '▲') : '↕' }}</button></th> }</tr></thead><tbody>
+@for(e of r.errores.slice(paginaErrores * 25, (paginaErrores + 1) * 25); track $index) { <tr><td>{{ e.fila ?? 'General' }}</td><td>{{ e.campo }}</td><td>{{ e.detalle }}</td></tr> }
+</tbody></table></div>
+<nav class="paginacion-resultados"><span>{{ r.errores.length }} errores</span><div class="botones-paginacion"><button class="secundario" [disabled]="paginaErrores === 0" (click)="paginaErrores = paginaErrores - 1">Anterior</button><span>Página {{ paginaErrores + 1 }}</span><button class="secundario" [disabled]="(paginaErrores + 1)*25 >= r.errores.length" (click)="paginaErrores = paginaErrores + 1">Siguiente</button></div></nav>
+} @else { <button class="primario" type="button" (click)="abrirAcuse()">Revisar acuse y confirmar</button> }
+</section> } }
+@if(entrega(); as e) { <section class="tarjeta entrega-finalizada" role="status"><div><strong><i class="fa-solid fa-circle-check"></i> Entrega recibida · {{ e.folio }}</strong><p>{{ e.recibidos }} recibidas · {{ e.noRecibidos }} no recibidas</p></div><div class="acciones"><button class="secundario" (click)="volver()">Volver a las entregas</button><button class="secundario" (click)="abrirAcuse()">Ver acuse</button></div></section> }
+<dialog #modalAcuse class="modal-acuse" aria-labelledby="titulo-acuse" (cancel)="cerrarAcuse($event)">
+    <div class="acuse-cabecera"><div><span>FISCALÍA</span><h2 id="titulo-acuse">{{ entrega() ? 'Acuse definitivo de entrega' : 'Vista previa del acuse' }}</h2></div><button type="button" class="cerrar-acuse" aria-label="Cerrar acuse" (click)="cerrarAcuse()" [disabled]="ocupado()">×</button></div>
+    <div class="acuse-resumen" aria-live="polite">
+        @if(entrega(); as carga) { <strong>Entrega recibida · {{ carga.folio }}</strong><span>{{ (carga.recibidos + carga.noRecibidos) | number }} registros aceptados</span> }
+        @else { <strong>La entrega aún no está confirmada.</strong><span>{{ resultado()?.recibidos }} recibidas · {{ resultado()?.noRecibidos }} no recibidas.</span> }
+    </div>
+    <div class="acuse-contenido">
+        @if(ocupado()) { <p role="status"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Generando acuse…</p> }
+        @if(errorPdf()) { <div class="aviso" role="alert">{{ errorPdf() }} <button type="button" class="secundario" (click)="abrirAcuse()">Reintentar</button></div> }
+        @if(pdf(); as pdf) { <iframe [src]="pdf" title="Vista del acuse de Fiscalía"></iframe> }
+    </div>
+    <div class="acuse-acciones">
+        <button type="button" class="secundario" (click)="cerrarAcuse()" [disabled]="ocupado()">{{ entrega() ? 'Cerrar' : 'Volver a los resultados' }}</button>
+        <button type="button" class="secundario" (click)="descargarPdf()" [disabled]="!pdf() || ocupado()"><i class="fa-solid fa-download" aria-hidden="true"></i> {{ entrega() ? 'Descargar acuse PDF' : 'Descargar vista previa' }}</button>
+        @if(!entrega())
+        {
+            <label class="consentimiento-acuse"><input type="checkbox" [(ngModel)]="aceptada"><span> He revisado las respuestas de esta quincena y confirmo su entrega.</span></label>
+        }
+        @if(!entrega()) { <button type="button" class="primario" (click)="validar(true)" [disabled]="ocupado() || !pdf() || !aceptada">{{ ocupado() ? 'Confirmando…' : 'Confirmar entrega' }}</button> }
+    </div>
+</dialog>
+
+<dialog #espera class="loading-carga" aria-labelledby="titulo-procesando" aria-describedby="detalle-procesando" aria-busy="true" (cancel)="$event.preventDefault()">
+    <div class="loading-carga-contenido" tabindex="-1" autofocus>
+        <span class="loading-carga-spinner" aria-hidden="true"></span>
+        <h2 id="titulo-procesando">Procesando información</h2>
+        <p id="detalle-procesando">Espere un momento. No cierre esta ventana.</p>
+    </div>
+</dialog>

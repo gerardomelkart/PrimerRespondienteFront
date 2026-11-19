@@ -1,13 +1,15 @@
 import { Component, ElementRef, afterRenderEffect, inject, signal, viewChild } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 
-interface Validacion { esperados: number; recibidos: number; noRecibidos: number; errores: { fila: number | null; campo: string; detalle: string }[]; }
-interface Opciones { periodos: { inicio: string; fin: string; nombre: string }[]; }
+interface Entrega { id: number; folio: string; inicio: string; fin: string; recibidos: number; noRecibidos: number; }
+interface Validacion { previo?: string; esperados: number; recibidos: number; noRecibidos: number; errores: { fila: number | null; campo: string; detalle: string }[]; }
+interface Opciones { entregas: Entrega[]; periodos: { inicio: string; fin: string; nombre: string }[]; }
 @Component({
-    selector: 'app-fiscalias', imports: [FormsModule, DecimalPipe], templateUrl: './fiscalias.html', styleUrl: './fiscalias.css'
+    selector: 'app-fiscalias', imports: [FormsModule, DecimalPipe, DatePipe], templateUrl: './fiscalias.html', styleUrls: ['../carga/carga.css', './fiscalias.css']
 })
 export class FiscaliasPage
 {
@@ -18,11 +20,86 @@ export class FiscaliasPage
     readonly mensaje = signal('');
     readonly resultado = signal<Validacion | null>(null);
     paginaErrores = 0;
-    entrega = signal<{ id: number; folio: string } | null>(null);
+    entrega = signal<Entrega | null>(null);
     aceptada = false;
     archivo?: File;
     arrastrando = false;
-    limpiar() { this.entrega.set(null); this.aceptada = false; this.archivo = undefined; this.arrastrando = false; this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set(''); }
+    readonly modal = viewChild.required<ElementRef<HTMLDialogElement>>('modalAcuse');
+    private readonly sanitizer = inject(DomSanitizer);
+    readonly pdf = signal<SafeResourceUrl | null>(null);
+    private pdfUrl = '';
+    readonly errorPdf = signal('');
+    readonly columnas = [{ campo: 'fila', nombre: 'Fila del Excel' }, { campo: 'campo', nombre: 'Campo' }, { campo: 'detalle', nombre: 'Detalle' }] as const;
+    verEntrega(entrega: Entrega) {
+        this.periodo = this.valor(entrega); this.entrega.set(entrega); this.abrirAcuse();
+    }
+    volver() { this.limpiar(); this.cargar(); }
+    private conflicto(e: HttpErrorResponse) {
+        if(!e.error?.entrega) return false;
+        this.entrega.set(e.error.entrega); this.mensaje.set(e.error.mensaje);
+        return true;
+    }
+
+    private liberarPdf() {
+        if(this.pdfUrl) URL.revokeObjectURL(this.pdfUrl);
+        this.pdfUrl = ''; this.pdf.set(null); this.errorPdf.set('');
+    }
+    private mostrarPdf(blob: Blob) {
+        this.liberarPdf();
+        this.pdfUrl = URL.createObjectURL(blob);
+        this.pdf.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.pdfUrl + '#toolbar=0'));
+    }
+    abrirAcuse() {
+        const dialogo = this.modal().nativeElement;
+        if(!dialogo.open) dialogo.showModal();
+        this.liberarPdf();
+        const entrega = this.entrega();
+        if(entrega) {
+            this.ocupado.set(true);
+            this.peticion = this.http.get('api/fiscalias/entregas/' + entrega.id + '/acuse', { responseType: 'blob' }).subscribe({
+                next: blob => { this.mostrarPdf(blob); this.ocupado.set(false); },
+                error: () => { this.errorPdf.set('La entrega está confirmada. Intente abrir el acuse nuevamente.'); this.ocupado.set(false); }
+            });
+        } else if(this.resultado()?.previo) {
+            const bytes = Uint8Array.from(atob(this.resultado()!.previo!), c => c.charCodeAt(0));
+            this.mostrarPdf(new Blob([bytes], { type: 'application/pdf' }));
+        } else this.errorPdf.set('Vuelva a validar la plantilla para obtener la vista previa.');
+    }
+    cerrarAcuse(evento?: Event) {
+        evento?.preventDefault();
+        if(this.ocupado()) return;
+        this.modal().nativeElement.close(); this.aceptada = false; this.liberarPdf();
+    }
+    private nombrePeriodo() { return this.periodo.split('|').map(v => v.split('-').reverse().join('-')).join('_al_'); }
+    private guardar(url: string, nombre: string) {
+        const enlace = document.createElement('a');
+        enlace.href = url; enlace.download = nombre; enlace.click();
+    }
+    descargarPdf() {
+        if(this.pdfUrl) this.guardar(this.pdfUrl, (this.entrega() ? 'Acuse_Fiscalia_' : 'Vista_previa_Fiscalia_') + this.nombrePeriodo() + '.pdf');
+    }
+    exportarErrores() {
+        this.ocupado.set(true);
+        this.peticion = this.http.post('api/fiscalias/errores/excel', this.resultado()!.errores, { responseType: 'blob' }).subscribe({
+            next: blob => {
+                const url = URL.createObjectURL(blob);
+                this.guardar(url, 'Errores_Fiscalia_' + this.nombrePeriodo() + '.xlsx');
+                setTimeout(() => URL.revokeObjectURL(url), 1000); this.ocupado.set(false);
+            },
+            error: () => { this.mensaje.set('No fue posible descargar los errores.'); this.ocupado.set(false); }
+        });
+    }
+    ordenarPor(campo: 'fila' | 'campo' | 'detalle') {
+        const r = this.resultado();
+        if(!r) return;
+        this.desc = this.orden === campo && !this.desc;
+        this.orden = campo;
+        const comparador = new Intl.Collator('es', { numeric: true });
+        this.resultado.set({ ...r, errores: [...r.errores].sort((a,b) => comparador.compare(String(a[campo] ?? ''), String(b[campo] ?? '')) * (this.desc ? -1 : 1)) });
+        this.paginaErrores = 0;
+    }
+    orden = ''; desc = false;
+    limpiar() { this.liberarPdf(); this.orden = ''; this.desc = false; this.entrega.set(null); this.aceptada = false; this.archivo = undefined; this.arrastrando = false; this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set(''); }
     seleccionar(files: FileList | null)
     {
         if(this.ocupado() || !files?.length) return;
@@ -50,9 +127,15 @@ export class FiscaliasPage
         form.append('archivo', archivo);
         this.ocupado.set(true);
         if(confirmar) {
-            this.peticion = this.http.post<{ id: number; folio: string }>('api/fiscalias/confirmar', form, { params: { inicio, fin } }).subscribe({
-                next: entrega => { this.entrega.set(entrega); this.ocupado.set(false); },
+            this.peticion = this.http.post<Entrega>('api/fiscalias/confirmar', form, { params: { inicio, fin } }).subscribe({
+                next: entrega => {
+                    this.entrega.set(entrega);
+                    this.opciones.update(o => o && ({ ...o, entregas: [...(o.entregas ?? []).filter(e => e.id !== entrega.id), entrega] }));
+                    this.ocupado.set(false); this.abrirAcuse();
+                },
                 error: e => {
+                    this.ocupado.set(false); this.cerrarAcuse();
+                    if(this.conflicto(e)) return;
                     if(e.error?.revision) this.resultado.set(e.error.revision.esperados ? e.error.revision : null);
                     this.aceptada = false; this.ocupado.set(false);
                     this.mensaje.set(e.error?.mensaje ?? 'No se pudo verificar la confirmación. Puede reintentar con el mismo archivo.');
@@ -61,8 +144,8 @@ export class FiscaliasPage
             return;
         }
         this.peticion = this.http.post<Validacion>('api/fiscalias/validar', form, { params: { inicio, fin } }).subscribe({
-            next: r => { this.resultado.set(r); this.ocupado.set(false); },
-            error: e => { this.mensaje.set(e.error?.mensaje ?? 'No fue posible validar el archivo.'); this.ocupado.set(false); }
+            next: r => { this.resultado.set(r); this.ocupado.set(false); if(!r.errores.length) this.abrirAcuse(); },
+            error: e => { this.ocupado.set(false); if(!this.conflicto(e)) this.mensaje.set(e.error?.mensaje ?? 'No fue posible validar el archivo.'); }
         });
     }
     anio = ''; periodo = '';
@@ -89,16 +172,16 @@ export class FiscaliasPage
             error: e => { this.ocupado.set(false); this.mensaje.set(e.status === 403 ? 'Este acceso no tiene permiso para la plantilla.' : 'No fue posible obtener los periodos. Intente nuevamente.'); }
         });
     }
-    descargar(acuse = false)
+    descargar()
     {
         if(this.ocupado() || !this.periodo) return;
         const [inicio, fin] = this.periodo.split('|');
         this.ocupado.set(true); this.mensaje.set('');
-        this.peticion = this.http.get(acuse ? 'api/fiscalias/entregas/' + this.entrega()!.id + '/acuse' : 'api/fiscalias/plantilla', { params: new HttpParams().set('inicio', inicio).set('fin', fin), responseType: 'blob' }).subscribe({
+        this.peticion = this.http.get('api/fiscalias/plantilla', { params: new HttpParams().set('inicio', inicio).set('fin', fin), responseType: 'blob' }).subscribe({
             next: archivo => {
                 const url = URL.createObjectURL(archivo); const enlace = document.createElement('a');
                 const fecha = (v: string) => v.split('-').reverse().join('-');
-                enlace.href = url; enlace.download = `${acuse ? 'Acuse' : 'Plantilla'}_Fiscalia_${fecha(inicio)}_al_${fecha(fin)}.${acuse ? 'pdf' : 'xlsx'}`; enlace.click();
+                enlace.href = url; enlace.download = `Plantilla_Fiscalia_${fecha(inicio)}_al_${fecha(fin)}.xlsx`; enlace.click();
                 setTimeout(() => URL.revokeObjectURL(url), 1000); this.ocupado.set(false);
             },
             error: async (e: HttpErrorResponse) => {
@@ -108,5 +191,5 @@ export class FiscaliasPage
             }
         });
     }
-    ngOnDestroy() { this.peticion?.unsubscribe(); }
+    ngOnDestroy() { this.liberarPdf(); this.peticion?.unsubscribe(); }
 }
