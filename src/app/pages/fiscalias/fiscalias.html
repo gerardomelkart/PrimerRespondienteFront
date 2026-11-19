@@ -6,11 +6,34 @@
     <h2>Descargar plantilla</h2>
     <div class="filtros">
         <div><label for="anioFiscalia">Año</label><select id="anioFiscalia" [(ngModel)]="anio" (ngModelChange)="cambiarAnio()" [disabled]="ocupado()">@for(a of anios; track a) { <option [value]="a">{{ a }}</option> }</select></div>
-        <div><label for="periodoFiscalia">Periodo de entrega</label><select id="periodoFiscalia" [(ngModel)]="periodo" [disabled]="ocupado()">@for(p of periodos; track p.inicio) { <option [value]="valor(p)">{{ p.nombre }}</option> }</select></div>
+        <div><label for="periodoFiscalia">Periodo de entrega</label><select id="periodoFiscalia" [(ngModel)]="periodo" (ngModelChange)="limpiar()" [disabled]="ocupado()">@for(p of periodos; track p.inicio) { <option [value]="valor(p)">{{ p.nombre }}</option> }</select></div>
         <button type="button" class="primario" (click)="descargar()" [disabled]="ocupado() || !periodo"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button>
     </div>
     <p class="muted">Incluye entregas confirmadas y vigentes y localizadas en RND, dentro del alcance territorial de su usuario. Se conservan todas las filas reportadas.</p>
     @if(opciones() && !opciones()!.periodos.length) { <p role="status">No hay periodos con registros disponibles para esta fiscalía.</p> }
     @if(!opciones() && !ocupado()) { <button type="button" class="secundario" (click)="cargar()">Reintentar</button> }
 </section>
+@if(periodo) {
+<section class="tarjeta">
+    <h2>Validar respuestas</h2>
+    <label for="respuestas">Seleccione la plantilla completada del periodo</label>
+    <input #archivo id="respuestas" type="file" accept=".xlsx" [disabled]="ocupado()" (change)="validar(archivo)">
+    @if(resultado(); as r) {
+        <p role="status">{{ r.errores.length ? 'Revise los datos y vuelva a seleccionar el archivo corregido.' : 'Validación correcta.' }}</p>
+        <p>Detenciones precargadas: {{ r.esperados }} · Recibidas: {{ r.recibidos }} · No recibidas: {{ r.noRecibidos }}</p>
+        @if(r.errores.length) {
+            <table><thead><tr><th>Fila del Excel</th><th>Campo</th><th>Detalle</th></tr></thead><tbody>
+                @for(e of r.errores.slice(paginaErrores * 25, (paginaErrores + 1) * 25); track $index) {
+                    <tr><td>{{ e.fila ?? 'General' }}</td><td>{{ e.campo }}</td><td>{{ e.detalle }}</td></tr>
+                }
+            </tbody></table>
+            @if(r.errores.length > 25) {
+                <button type="button" [disabled]="paginaErrores === 0" (click)="paginaErrores = paginaErrores - 1">Anterior</button>
+                <span>Página {{ paginaErrores + 1 }}</span>
+                <button type="button" [disabled]="(paginaErrores + 1) * 25 >= r.errores.length" (click)="paginaErrores = paginaErrores + 1">Siguiente</button>
+            }
+        }
+    }
+</section>
+}
 <dialog #espera class="espera" aria-labelledby="tituloEsperaFiscalia" aria-busy="true" (cancel)="$event.preventDefault()"><div tabindex="-1" autofocus><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><h2 id="tituloEsperaFiscalia">Procesando solicitud</h2><p>Espere un momento.</p></div></dialog>

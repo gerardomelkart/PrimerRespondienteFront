@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 
+interface Validacion { esperados: number; recibidos: number; noRecibidos: number; errores: { fila: number | null; campo: string; detalle: string }[]; }
 interface Opciones { periodos: { inicio: string; fin: string; nombre: string }[]; }
 @Component({
     selector: 'app-fiscalias', imports: [FormsModule], templateUrl: './fiscalias.html', styleUrl: './fiscalias.css'
@@ -14,6 +15,24 @@ export class FiscaliasPage
     readonly opciones = signal<Opciones | null>(null);
     readonly ocupado = signal(false);
     readonly mensaje = signal('');
+    readonly resultado = signal<Validacion | null>(null);
+    paginaErrores = 0;
+    limpiar() { this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set(''); }
+    validar(input: HTMLInputElement)
+    {
+        const archivo = input.files?.[0];
+        if(!archivo || !this.periodo || this.ocupado()) return;
+        this.limpiar();
+        const [inicio, fin] = this.periodo.split('|');
+        const form = new FormData();
+        form.append('archivo', archivo);
+        this.ocupado.set(true);
+        this.peticion = this.http.post<Validacion>('api/fiscalias/validar', form, { params: { inicio, fin } }).subscribe({
+            next: r => { this.resultado.set(r); this.ocupado.set(false); },
+            error: e => { this.mensaje.set(e.error?.mensaje ?? 'No fue posible validar el archivo.'); this.ocupado.set(false); }
+        });
+        input.value = '';
+    }
     anio = ''; periodo = '';
     private peticion?: Subscription;
     constructor()
@@ -28,7 +47,7 @@ export class FiscaliasPage
     }
     get anios() { return [...new Set((this.opciones()?.periodos ?? []).map(p => p.inicio.slice(0, 4)))].sort().reverse(); }
     get periodos() { return (this.opciones()?.periodos ?? []).filter(p => p.inicio.startsWith(this.anio)); }
-    cambiarAnio() { this.periodo = this.periodos[0] ? this.valor(this.periodos[0]) : ''; }
+    cambiarAnio() { this.limpiar(); this.periodo = this.periodos[0] ? this.valor(this.periodos[0]) : ''; }
     valor(p: { inicio: string; fin: string }) { return p.inicio.slice(0, 10) + '|' + p.fin.slice(0, 10); }
     cargar()
     {
