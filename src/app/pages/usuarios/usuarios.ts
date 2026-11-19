@@ -19,7 +19,7 @@ export class UsuariosPage
     readonly errorEliminar = signal('');
     readonly reactivando = signal(false);
     readonly mostrarInactivos = signal(false);
-    readonly columnaOrden = signal<'nombre' | 'usuario' | 'accesos' | 'estado'>('nombre');
+    readonly columnaOrden = signal<'nombre' | 'usuario' | 'tipo' | 'accesos' | 'estado'>('nombre');
     readonly ordenDescendente = signal(false);
     private readonly http = inject(HttpClient);
     readonly session = inject(SessionService);
@@ -53,11 +53,11 @@ export class UsuariosPage
     {
         const texto = this.normalizar(this.busqueda());
         return this.usuarios().filter(usuario => this.normalizar([
-            usuario.nombre, usuario.usuario, this.estadoUsuario(usuario),
+            usuario.nombre, usuario.usuario, this.tipoUsuario(usuario), this.estadoUsuario(usuario),
             ...(usuario.accesos ?? []).map(a => this.descripcion(a))
         ].join(' ')).includes(texto)).sort((a, b) => {
             const columna = this.columnaOrden();
-            const valor = (u: Usuario) => columna === 'accesos' ? (u.accesos ?? []).map(a => this.descripcion(a)).join(' ') : columna === 'estado' ? this.estadoUsuario(u) : u[columna];
+            const valor = (u: Usuario) => columna === 'tipo' ? this.tipoUsuario(u) : columna === 'accesos' ? (u.accesos ?? []).map(a => this.descripcion(a)).join(' ') : columna === 'estado' ? this.estadoUsuario(u) : u[columna];
             const comparacion = valor(a).localeCompare(valor(b), 'es', { sensitivity: 'base', numeric: true });
             return (this.ordenDescendente() ? -comparacion : comparacion) || a.id - b.id;
         });
@@ -74,7 +74,7 @@ export class UsuariosPage
 
     estadoUsuario(usuario: Usuario) { return usuario.eliminado ? 'Eliminado' : usuario.activo ? 'Activo' : 'Inactivo'; }
 
-    ordenar(columna: 'nombre' | 'usuario' | 'accesos' | 'estado')
+    ordenar(columna: 'nombre' | 'usuario' | 'tipo' | 'accesos' | 'estado')
     {
         this.ordenDescendente.set(this.columnaOrden() === columna ? !this.ordenDescendente() : false);
         this.columnaOrden.set(columna); this.pagina.set(1);
@@ -99,6 +99,11 @@ export class UsuariosPage
     activos()
     {
         return this.usuarios().filter(u => u.activo).length;
+    }
+
+    tipoUsuario(usuario: Usuario)
+    {
+        return [...new Set((usuario.accesos ?? []).map(a => this.nombrePerfil(a.rol)))].sort().join(', ');
     }
 
     descripcion(acceso: AccesoUsuario)

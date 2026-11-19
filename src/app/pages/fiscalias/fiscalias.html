@@ -16,8 +16,24 @@
 @if(periodo) {
 <section class="tarjeta">
     <h2>Validar respuestas</h2>
-    <label for="respuestas">Seleccione la plantilla completada del periodo</label>
-    <input #archivo id="respuestas" type="file" accept=".xlsx" [disabled]="ocupado()" (change)="validar(archivo)">
+    <div class="arrastre" [class.arrastrando]="arrastrando" [class.con-archivo]="archivo" (dragover)="$event.preventDefault(); arrastrando = !ocupado()" (dragleave)="arrastrando = false" (drop)="soltar($event)">
+        @if(archivo; as seleccionado)
+        {
+            <div class="archivo-seleccionado" role="status">
+                <i class="fa-solid fa-file-excel archivo-icono" aria-hidden="true"></i>
+                <div><span class="archivo-estado"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Archivo seleccionado</span><strong>{{ seleccionado.name }}</strong><small>{{ seleccionado.size / 1024 | number:'1.0-1' }} KB</small></div>
+                <button type="button" class="quitar-archivo" aria-label="Quitar archivo seleccionado" (click)="limpiar()" [disabled]="ocupado()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            </div>
+        }
+        @else
+        {
+            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i><strong>Arrastra aquí la plantilla completada</strong>
+        }
+        <span>Formato .xlsx</span>
+        <button type="button" class="secundario" (click)="selectorArchivo.click()" [disabled]="ocupado()">{{ archivo ? 'Cambiar archivo' : 'Seleccionar archivo' }}</button>
+        <input #selectorArchivo hidden type="file" aria-label="Plantilla completada de fiscalía" accept=".xlsx" (change)="seleccionar(selectorArchivo.files); selectorArchivo.value = ''" [disabled]="ocupado()">
+    </div>
+    <div class="acciones"><button type="button" class="primario" (click)="validar()" [disabled]="!archivo || ocupado()">{{ ocupado() ? 'Procesando…' : 'Validar archivo' }}</button></div>
     @if(resultado(); as r) {
         <p role="status">{{ r.errores.length ? 'Revise los datos y vuelva a seleccionar el archivo corregido.' : 'Validación correcta.' }}</p>
         <p>Detenciones precargadas: {{ r.esperados }} · Recibidas: {{ r.recibidos }} · No recibidas: {{ r.noRecibidos }}</p>

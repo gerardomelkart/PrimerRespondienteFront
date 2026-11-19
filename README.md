@@ -149,7 +149,7 @@ Después de una validación correcta se abre la vista previa del PDF en un diál
 Aplicar `EficienciaMinisterialBD/scripts/007_primer_login.sql` antes de iniciar la API actualizada.
 Las cuentas existentes y nuevas deben cambiar su contraseña antes de acceder a los módulos.
 Las cuentas con cualquier acceso `SUPER_USUARIO` quedan exentas. El cambio exige contraseña actual,
-nueva diferente de al menos 12 caracteres y confirmación; se registra en bitácora.
+nueva diferente de al menos 8 caracteres y confirmación; se registra en bitácora.
 La API bloquea las operaciones hasta completar el cambio. El indicador se desactiva al guardarlo.
 La confirmación rechaza el mismo SHA-256 para una corporación y periodo ya confirmados,
 incluso en solicitudes concurrentes; no se guardan archivos originales.

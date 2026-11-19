@@ -30,13 +30,14 @@
         {
             <div class="table-responsive">
                 <table class="usuarios-table">
-                    <thead><tr><th scope="col" [attr.aria-sort]="ariaOrden('nombre')"><button type="button" class="orden-usuarios" (click)="ordenar('nombre')">Nombre{{ indicador('nombre') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('usuario')"><button type="button" class="orden-usuarios" (click)="ordenar('usuario')">Usuario{{ indicador('usuario') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('accesos')"><button type="button" class="orden-usuarios" (click)="ordenar('accesos')">Accesos asignados{{ indicador('accesos') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('estado')"><button type="button" class="orden-usuarios" (click)="ordenar('estado')">Estado{{ indicador('estado') }}</button></th><th>Acciones</th></tr></thead>
+                    <thead><tr><th scope="col" [attr.aria-sort]="ariaOrden('nombre')"><button type="button" class="orden-usuarios" (click)="ordenar('nombre')">Nombre{{ indicador('nombre') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('usuario')"><button type="button" class="orden-usuarios" (click)="ordenar('usuario')">Usuario{{ indicador('usuario') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('tipo')"><button type="button" class="orden-usuarios" (click)="ordenar('tipo')">Tipo de usuario{{ indicador('tipo') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('accesos')"><button type="button" class="orden-usuarios" (click)="ordenar('accesos')">Accesos asignados{{ indicador('accesos') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('estado')"><button type="button" class="orden-usuarios" (click)="ordenar('estado')">Estado{{ indicador('estado') }}</button></th><th>Acciones</th></tr></thead>
                     <tbody>
                         @for(usuario of visibles(); track usuario.id)
                         {
                             <tr>
                                 <td class="usuario-nombre">{{ usuario.nombre }}</td>
                                 <td>{{ usuario.usuario }}</td>
+                                <td>{{ tipoUsuario(usuario) }}</td>
                                 <td>@for(acceso of usuario.accesos; track acceso.id) { <div class="acceso-resumen">{{ descripcion(acceso) }}</div> }</td>
                                 <td><span class="rol-badge">{{ estadoUsuario(usuario) }}</span></td>
                                 <td>
@@ -54,7 +55,7 @@
                         }
                         @empty
                         {
-                            <tr><td colspan="5" class="usuarios-mensaje">No se encontraron usuarios.</td></tr>
+                            <tr><td colspan="6" class="usuarios-mensaje">No se encontraron usuarios.</td></tr>
                         }
                     </tbody>
                 </table>
@@ -86,7 +87,7 @@
                     <div><label for="nuevoUsuario">Usuario *</label><input id="nuevoUsuario" name="nuevoUsuario" [(ngModel)]="nuevo.usuario" required maxlength="80" autocomplete="off"></div>
                     @if(editando === null)
                     {
-                        <div><label for="nuevoPassword">Contraseña inicial *</label><input id="nuevoPassword" name="nuevoPassword" type="password" [(ngModel)]="nuevo.password" minlength="12" maxlength="72" required autocomplete="new-password"><small>Mínimo 12 caracteres; máximo 72 bytes UTF-8.</small></div>
+                        <div><label for="nuevoPassword">Contraseña inicial *</label><input id="nuevoPassword" name="nuevoPassword" type="password" [(ngModel)]="nuevo.password" minlength="8" maxlength="72" required autocomplete="new-password"><small>Mínimo 8 caracteres; máximo 72 bytes UTF-8.</small></div>
                     }
                     @else
                     {

@@ -1,4 +1,5 @@
 import { Component, ElementRef, afterRenderEffect, inject, signal, viewChild } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Subscription } from 'rxjs';
@@ -6,7 +7,7 @@ import { Subscription } from 'rxjs';
 interface Validacion { esperados: number; recibidos: number; noRecibidos: number; errores: { fila: number | null; campo: string; detalle: string }[]; }
 interface Opciones { periodos: { inicio: string; fin: string; nombre: string }[]; }
 @Component({
-    selector: 'app-fiscalias', imports: [FormsModule], templateUrl: './fiscalias.html', styleUrl: './fiscalias.css'
+    selector: 'app-fiscalias', imports: [FormsModule, DecimalPipe], templateUrl: './fiscalias.html', styleUrl: './fiscalias.css'
 })
 export class FiscaliasPage
 {
@@ -17,12 +18,29 @@ export class FiscaliasPage
     readonly mensaje = signal('');
     readonly resultado = signal<Validacion | null>(null);
     paginaErrores = 0;
-    limpiar() { this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set(''); }
-    validar(input: HTMLInputElement)
+    archivo?: File;
+    arrastrando = false;
+    limpiar() { this.archivo = undefined; this.arrastrando = false; this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set(''); }
+    seleccionar(files: FileList | null)
     {
-        const archivo = input.files?.[0];
-        if(!archivo || !this.periodo || this.ocupado()) return;
+        if(this.ocupado() || !files?.length) return;
         this.limpiar();
+        const archivo = files[0];
+        if(files.length !== 1 || !archivo.name.toLowerCase().endsWith('.xlsx') || !archivo.size)
+            this.mensaje.set('Seleccione un solo archivo .xlsx con contenido.');
+        else this.archivo = archivo;
+    }
+    soltar(evento: DragEvent)
+    {
+        evento.preventDefault();
+        this.arrastrando = false;
+        this.seleccionar(evento.dataTransfer?.files ?? null);
+    }
+    validar()
+    {
+        const archivo = this.archivo;
+        if(!archivo || !this.periodo || this.ocupado()) return;
+        this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set('');
         const [inicio, fin] = this.periodo.split('|');
         const form = new FormData();
         form.append('archivo', archivo);
@@ -31,7 +49,6 @@ export class FiscaliasPage
             next: r => { this.resultado.set(r); this.ocupado.set(false); },
             error: e => { this.mensaje.set(e.error?.mensaje ?? 'No fue posible validar el archivo.'); this.ocupado.set(false); }
         });
-        input.value = '';
     }
     anio = ''; periodo = '';
     private peticion?: Subscription;
