@@ -16,12 +16,12 @@
     <section class="siiid-card usuarios-card">
         <div class="siiid-card-header usuarios-card-header">
             <span><i class="fa-solid fa-users" aria-hidden="true"></i> Usuarios del sistema</span>
+        <label class="filtro-estado"><input type="checkbox" [ngModel]="mostrarInactivos()" (ngModelChange)="cambiarInactivos($event)" [disabled]="cargando() || ocupado()"> Mostrar inactivos y eliminados</label>
             <div class="buscador">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                 <input type="search" aria-label="Buscar usuarios" placeholder="Buscar por nombre, usuario, institución o perfil..." [ngModel]="busqueda()" (ngModelChange)="buscar($event)">
             </div>
         </div>
-        <div class="filtros-usuarios"><label><input type="checkbox" [ngModel]="mostrarInactivos()" (ngModelChange)="cambiarInactivos($event)" [disabled]="cargando() || ocupado()"> Mostrar inactivos y eliminados</label></div>
         @if(cargando())
         {
             <p class="usuarios-mensaje" role="status">Cargando usuarios…</p>
