@@ -18,9 +18,11 @@ export class FiscaliasPage
     readonly mensaje = signal('');
     readonly resultado = signal<Validacion | null>(null);
     paginaErrores = 0;
+    entrega = signal<{ id: number; folio: string } | null>(null);
+    aceptada = false;
     archivo?: File;
     arrastrando = false;
-    limpiar() { this.archivo = undefined; this.arrastrando = false; this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set(''); }
+    limpiar() { this.entrega.set(null); this.aceptada = false; this.archivo = undefined; this.arrastrando = false; this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set(''); }
     seleccionar(files: FileList | null)
     {
         if(this.ocupado() || !files?.length) return;
@@ -36,15 +38,28 @@ export class FiscaliasPage
         this.arrastrando = false;
         this.seleccionar(evento.dataTransfer?.files ?? null);
     }
-    validar()
+    validar(confirmar = false)
     {
         const archivo = this.archivo;
         if(!archivo || !this.periodo || this.ocupado()) return;
-        this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set('');
+        if(confirmar && (!this.aceptada || !this.resultado() || this.resultado()!.errores.length || this.entrega())) return;
+        if(!confirmar) { this.resultado.set(null); this.aceptada = false; }
+        this.paginaErrores = 0; this.mensaje.set('');
         const [inicio, fin] = this.periodo.split('|');
         const form = new FormData();
         form.append('archivo', archivo);
         this.ocupado.set(true);
+        if(confirmar) {
+            this.peticion = this.http.post<{ id: number; folio: string }>('api/fiscalias/confirmar', form, { params: { inicio, fin } }).subscribe({
+                next: entrega => { this.entrega.set(entrega); this.ocupado.set(false); },
+                error: e => {
+                    if(e.error?.revision) this.resultado.set(e.error.revision.esperados ? e.error.revision : null);
+                    this.aceptada = false; this.ocupado.set(false);
+                    this.mensaje.set(e.error?.mensaje ?? 'No se pudo verificar la confirmación. Puede reintentar con el mismo archivo.');
+                }
+            });
+            return;
+        }
         this.peticion = this.http.post<Validacion>('api/fiscalias/validar', form, { params: { inicio, fin } }).subscribe({
             next: r => { this.resultado.set(r); this.ocupado.set(false); },
             error: e => { this.mensaje.set(e.error?.mensaje ?? 'No fue posible validar el archivo.'); this.ocupado.set(false); }
@@ -74,16 +89,16 @@ export class FiscaliasPage
             error: e => { this.ocupado.set(false); this.mensaje.set(e.status === 403 ? 'Este acceso no tiene permiso para la plantilla.' : 'No fue posible obtener los periodos. Intente nuevamente.'); }
         });
     }
-    descargar()
+    descargar(acuse = false)
     {
         if(this.ocupado() || !this.periodo) return;
         const [inicio, fin] = this.periodo.split('|');
         this.ocupado.set(true); this.mensaje.set('');
-        this.peticion = this.http.get('api/fiscalias/plantilla', { params: new HttpParams().set('inicio', inicio).set('fin', fin), responseType: 'blob' }).subscribe({
+        this.peticion = this.http.get(acuse ? 'api/fiscalias/entregas/' + this.entrega()!.id + '/acuse' : 'api/fiscalias/plantilla', { params: new HttpParams().set('inicio', inicio).set('fin', fin), responseType: 'blob' }).subscribe({
             next: archivo => {
                 const url = URL.createObjectURL(archivo); const enlace = document.createElement('a');
                 const fecha = (v: string) => v.split('-').reverse().join('-');
-                enlace.href = url; enlace.download = `Plantilla_Fiscalia_${fecha(inicio)}_al_${fecha(fin)}.xlsx`; enlace.click();
+                enlace.href = url; enlace.download = `${acuse ? 'Acuse' : 'Plantilla'}_Fiscalia_${fecha(inicio)}_al_${fecha(fin)}.${acuse ? 'pdf' : 'xlsx'}`; enlace.click();
                 setTimeout(() => URL.revokeObjectURL(url), 1000); this.ocupado.set(false);
             },
             error: async (e: HttpErrorResponse) => {

@@ -16,6 +16,7 @@
 @if(periodo) {
 <section class="tarjeta">
     <h2>Validar respuestas</h2>
+    @if(!entrega()) {
     <div class="arrastre" [class.arrastrando]="arrastrando" [class.con-archivo]="archivo" (dragover)="$event.preventDefault(); arrastrando = !ocupado()" (dragleave)="arrastrando = false" (drop)="soltar($event)">
         @if(archivo; as seleccionado)
         {
@@ -34,9 +35,17 @@
         <input #selectorArchivo hidden type="file" aria-label="Plantilla completada de fiscalía" accept=".xlsx" (change)="seleccionar(selectorArchivo.files); selectorArchivo.value = ''" [disabled]="ocupado()">
     </div>
     <div class="acciones"><button type="button" class="primario" (click)="validar()" [disabled]="!archivo || ocupado()">{{ ocupado() ? 'Procesando…' : 'Validar archivo' }}</button></div>
+    }
     @if(resultado(); as r) {
-        <p role="status">{{ r.errores.length ? 'Revise los datos y vuelva a seleccionar el archivo corregido.' : 'Validación correcta.' }}</p>
+        <p role="status">{{ r.errores.length ? 'Revise los datos y vuelva a seleccionar el archivo corregido.' : entrega() ? 'Entrega confirmada.' : 'Validación correcta. Confirme la entrega para obtener su folio.' }}</p>
         <p>Detenciones precargadas: {{ r.esperados }} · Recibidas: {{ r.recibidos }} · No recibidas: {{ r.noRecibidos }}</p>
+        @if(entrega(); as acuse) {
+            <strong>Folio {{ acuse.folio }}</strong>
+            <button type="button" class="secundario" (click)="descargar(true)" [disabled]="ocupado()">Descargar acuse PDF</button>
+        } @else if(!r.errores.length && r.esperados) {
+            <label><input type="checkbox" style="width:auto" [(ngModel)]="aceptada"> He revisado las respuestas de esta quincena.</label>
+            <button type="button" class="primario" (click)="validar(true)" [disabled]="!aceptada || ocupado()">Confirmar entrega</button>
+        }
         @if(r.errores.length) {
             <table><thead><tr><th>Fila del Excel</th><th>Campo</th><th>Detalle</th></tr></thead><tbody>
                 @for(e of r.errores.slice(paginaErrores * 25, (paginaErrores + 1) * 25); track $index) {
