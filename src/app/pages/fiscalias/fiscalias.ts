@@ -19,7 +19,36 @@ export class FiscaliasPage
     readonly ocupado = signal(false);
     readonly mensaje = signal('');
     readonly resultado = signal<Validacion | null>(null);
-    paginaErrores = 0;
+    private readonly tablaResultados = viewChild<ElementRef<HTMLDivElement>>('tablaResultados');
+    paginaResultado = 1;
+    filasPorPagina = 20;
+    get totalPaginas()
+    {
+        return Math.max(1, Math.ceil((this.resultado()?.errores ?? []).length / this.filasPorPagina));
+    }
+
+    get incidenciasPagina()
+    {
+        const inicio = (this.paginaResultado - 1) * this.filasPorPagina;
+        return (this.resultado()?.errores ?? []).slice(inicio, inicio + this.filasPorPagina);
+    }
+
+    get paginasVisibles()
+    {
+        const inicio = Math.max(1, Math.min(this.paginaResultado - 2, this.totalPaginas - 4));
+        return Array.from({ length: Math.min(5, this.totalPaginas) }, (_, indice) => inicio + indice);
+    }
+
+    irAPagina(pagina: number | null)
+    {
+        this.paginaResultado = Math.min(this.totalPaginas, Math.max(1, Math.trunc(Number(pagina)) || 1));
+        if(this.tablaResultados())
+        {
+            this.tablaResultados()!.nativeElement.scrollTop = 0;
+        }
+    }
+
+
     entrega = signal<Entrega | null>(null);
     aceptada = false;
     archivo?: File;
@@ -29,6 +58,18 @@ export class FiscaliasPage
     readonly pdf = signal<SafeResourceUrl | null>(null);
     private pdfUrl = '';
     readonly errorPdf = signal('');
+    readonly columnasHistorial = [{ campo: 'inicio', nombre: 'Periodo de entrega' }, { campo: 'folio', nombre: 'Folio' }, { campo: 'recibidos', nombre: 'Recibidas' }, { campo: 'noRecibidos', nombre: 'No recibidas' }] as const;
+    ordenHistorial: 'inicio' | 'folio' | 'recibidos' | 'noRecibidos' = 'inicio';
+    historialDesc = true;
+    ordenarHistorial(campo: typeof this.ordenHistorial) {
+        this.historialDesc = this.ordenHistorial === campo ? !this.historialDesc : false;
+        this.ordenHistorial = campo;
+    }
+    get historial() {
+        const comparador = new Intl.Collator('es', { numeric: true });
+        return [...(this.opciones()?.entregas ?? [])].sort((a, b) =>
+            comparador.compare(String(a[this.ordenHistorial]), String(b[this.ordenHistorial])) * (this.historialDesc ? -1 : 1));
+    }
     readonly columnas = [{ campo: 'fila', nombre: 'Fila del Excel' }, { campo: 'campo', nombre: 'Campo' }, { campo: 'detalle', nombre: 'Detalle' }] as const;
     verEntrega(entrega: Entrega) {
         this.periodo = this.valor(entrega); this.entrega.set(entrega); this.abrirAcuse();
@@ -96,10 +137,10 @@ export class FiscaliasPage
         this.orden = campo;
         const comparador = new Intl.Collator('es', { numeric: true });
         this.resultado.set({ ...r, errores: [...r.errores].sort((a,b) => comparador.compare(String(a[campo] ?? ''), String(b[campo] ?? '')) * (this.desc ? -1 : 1)) });
-        this.paginaErrores = 0;
+        this.irAPagina(1);
     }
     orden = ''; desc = false;
-    limpiar() { this.liberarPdf(); this.orden = ''; this.desc = false; this.entrega.set(null); this.aceptada = false; this.archivo = undefined; this.arrastrando = false; this.resultado.set(null); this.paginaErrores = 0; this.mensaje.set(''); }
+    limpiar() { this.liberarPdf(); this.orden = ''; this.desc = false; this.entrega.set(null); this.aceptada = false; this.archivo = undefined; this.arrastrando = false; this.resultado.set(null); this.irAPagina(1); this.mensaje.set(''); }
     seleccionar(files: FileList | null)
     {
         if(this.ocupado() || !files?.length) return;
@@ -121,7 +162,7 @@ export class FiscaliasPage
         if(!archivo || !this.periodo || this.ocupado()) return;
         if(confirmar && (!this.aceptada || !this.resultado() || this.resultado()!.errores.length || this.entrega())) return;
         if(!confirmar) { this.resultado.set(null); this.aceptada = false; }
-        this.paginaErrores = 0; this.mensaje.set('');
+        this.irAPagina(1); this.mensaje.set('');
         const [inicio, fin] = this.periodo.split('|');
         const form = new FormData();
         form.append('archivo', archivo);

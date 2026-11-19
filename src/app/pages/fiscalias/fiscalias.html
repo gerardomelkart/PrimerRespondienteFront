@@ -37,8 +37,8 @@
 </section>
 @if(opciones()?.entregas?.length) {
 <section class="tarjeta"><h2>Entregas confirmadas</h2>
-<div class="tabla-scroll"><table><thead><tr><th>Periodo de entrega</th><th>Folio</th><th>Recibidas</th><th>No recibidas</th><th>Acuse</th></tr></thead><tbody>
-@for(e of opciones()!.entregas; track e.id) { <tr><td>{{ e.inicio | date:'dd/MM/yyyy' }} al {{ e.fin | date:'dd/MM/yyyy' }}</td><td>{{ e.folio }}</td><td>{{ e.recibidos }}</td><td>{{ e.noRecibidos }}</td><td><button type="button" class="secundario" (click)="verEntrega(e)">Ver acuse</button></td></tr> }
+<div class="tabla-scroll"><table><thead><tr>@for(c of columnasHistorial; track c.campo) { <th scope="col" [attr.aria-sort]="ordenHistorial === c.campo ? (historialDesc ? 'descending' : 'ascending') : 'none'"><button class="orden-columna" type="button" (click)="ordenarHistorial(c.campo)">{{ c.nombre }} {{ ordenHistorial === c.campo ? (historialDesc ? '▼' : '▲') : '↕' }}</button></th> }<th>Acuse</th></tr></thead><tbody>
+@for(e of historial; track e.id) { <tr><td>{{ e.inicio | date:'dd/MM/yyyy' }} al {{ e.fin | date:'dd/MM/yyyy' }}</td><td>{{ e.folio }}</td><td>{{ e.recibidos }}</td><td>{{ e.noRecibidos }}</td><td><button type="button" class="secundario" (click)="verEntrega(e)">Ver acuse</button></td></tr> }
 </tbody></table></div></section>
 }
 }
@@ -49,10 +49,23 @@
 <div class="resultado-cabecera"><div><h2>{{ r.errores.length ? 'Revise los errores del archivo' : 'Archivo validado' }}</h2><p>{{ r.esperados }} detenciones precargadas · {{ r.recibidos }} recibidas · {{ r.noRecibidos }} no recibidas</p></div>
 @if(r.errores.length) { <button type="button" class="secundario" (click)="exportarErrores()">Descargar resultados en Excel</button> }</div>
 @if(r.errores.length) {
-<div class="tabla-scroll"><table class="tabla-validacion"><thead><tr>@for(c of columnas; track c.campo) { <th [attr.aria-sort]="orden === c.campo ? (desc ? 'descending' : 'ascending') : 'none'"><button type="button" class="orden-columna" (click)="ordenarPor(c.campo)">{{ c.nombre }} {{ orden === c.campo ? (desc ? '▼' : '▲') : '↕' }}</button></th> }</tr></thead><tbody>
-@for(e of r.errores.slice(paginaErrores * 25, (paginaErrores + 1) * 25); track $index) { <tr><td>{{ e.fila ?? 'General' }}</td><td>{{ e.campo }}</td><td>{{ e.detalle }}</td></tr> }
+<div #tablaResultados class="tabla-scroll"><table class="tabla-validacion"><thead><tr>@for(c of columnas; track c.campo) { <th [attr.aria-sort]="orden === c.campo ? (desc ? 'descending' : 'ascending') : 'none'"><button type="button" class="orden-columna" (click)="ordenarPor(c.campo)">{{ c.nombre }} {{ orden === c.campo ? (desc ? '▼' : '▲') : '↕' }}</button></th> }</tr></thead><tbody>
+@for(e of incidenciasPagina; track $index) { <tr><td>{{ e.fila ?? 'General' }}</td><td>{{ e.campo }}</td><td>{{ e.detalle }}</td></tr> }
 </tbody></table></div>
-<nav class="paginacion-resultados"><span>{{ r.errores.length }} errores</span><div class="botones-paginacion"><button class="secundario" [disabled]="paginaErrores === 0" (click)="paginaErrores = paginaErrores - 1">Anterior</button><span>Página {{ paginaErrores + 1 }}</span><button class="secundario" [disabled]="(paginaErrores + 1)*25 >= r.errores.length" (click)="paginaErrores = paginaErrores + 1">Siguiente</button></div></nav>
+<nav class="paginacion-resultados" aria-label="Páginas del resultado de validación">
+                <div class="resumen-paginacion"><span>{{ (paginaResultado - 1) * filasPorPagina + 1 | number }}–{{ paginaResultado * filasPorPagina > r.errores.length ? (r.errores.length | number) : (paginaResultado * filasPorPagina | number) }} de {{ r.errores.length | number }} resultados</span><label>Filas por página <select aria-label="Filas por página" [(ngModel)]="filasPorPagina" (ngModelChange)="irAPagina(1)"><option [ngValue]="20">20</option><option [ngValue]="50">50</option><option [ngValue]="100">100</option></select></label></div>
+                <div class="botones-paginacion">
+                    <button type="button" class="secundario" (click)="irAPagina(1)" [disabled]="paginaResultado === 1" aria-label="Primera página"><i class="fa-solid fa-angles-left" aria-hidden="true"></i></button>
+                    <button type="button" class="secundario" (click)="irAPagina(paginaResultado - 1)" [disabled]="paginaResultado === 1" aria-label="Página anterior"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                    @for(pagina of paginasVisibles; track pagina)
+                    {
+                        <button type="button" class="secundario numero-pagina" [class.pagina-actual]="pagina === paginaResultado" [attr.aria-current]="pagina === paginaResultado ? 'page' : null" [attr.aria-label]="'Página ' + pagina" (click)="irAPagina(pagina)">{{ pagina }}</button>
+                    }
+                    <button type="button" class="secundario" (click)="irAPagina(paginaResultado + 1)" [disabled]="paginaResultado === totalPaginas" aria-label="Página siguiente"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                    <button type="button" class="secundario" (click)="irAPagina(totalPaginas)" [disabled]="paginaResultado === totalPaginas" aria-label="Última página"><i class="fa-solid fa-angles-right" aria-hidden="true"></i></button>
+                </div>
+                <label class="salto-pagina">Ir a página <input aria-label="Ir a página" type="number" [min]="1" [max]="totalPaginas" [ngModel]="paginaResultado" (ngModelChange)="irAPagina($event)"> de {{ totalPaginas }}</label>
+            </nav>
 } @else { <button class="primario" type="button" (click)="abrirAcuse()">Revisar acuse y confirmar</button> }
 </section> } }
 @if(entrega(); as e) { <section class="tarjeta entrega-finalizada" role="status"><div><strong><i class="fa-solid fa-circle-check"></i> Entrega recibida · {{ e.folio }}</strong><p>{{ e.recibidos }} recibidas · {{ e.noRecibidos }} no recibidas</p></div><div class="acciones"><button class="secundario" (click)="volver()">Volver a las entregas</button><button class="secundario" (click)="abrirAcuse()">Ver acuse</button></div></section> }
