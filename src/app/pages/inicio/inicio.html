@@ -8,7 +8,7 @@
         }
         @else
         {
-            <button type="button" class="bienvenida-boton" (click)="ir.emit('reporte-primer-respondiente')">Ir a informes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+            <button type="button" class="bienvenida-boton" (click)="ir.emit(session.sesion()!.usuario.rol === 'FISCALIA' ? 'reporte-completo' : 'reporte-primer-respondiente')">Ir a informes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
         }
     </div>
     <aside class="acceso-actual" aria-label="Acceso actual">
@@ -34,11 +34,14 @@
                 <span class="acceso-enlace">Ir a carga <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
             </button>
         }
-        <button type="button" class="acceso-tarjeta" (click)="ir.emit('reporte-primer-respondiente')">
-            <span class="acceso-icono"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span>
-            <strong>Informes</strong><span>Accede al espacio de consulta de información de Primer Respondiente.</span>
-            <span class="acceso-enlace">Ver informes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
-        </button>
+        @if(session.sesion()!.usuario.rol !== 'FISCALIA')
+        {
+            <button type="button" class="acceso-tarjeta" (click)="ir.emit('reporte-primer-respondiente')">
+                <span class="acceso-icono"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span>
+                <strong>Informes</strong><span>Accede al espacio de consulta de información de Primer Respondiente.</span>
+                <span class="acceso-enlace">Ver informes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </button>
+        }
         @if(session.sesion()!.usuario.rol === 'SUPER_USUARIO')
         {
             <button type="button" class="acceso-tarjeta" (click)="ir.emit('usuarios')">

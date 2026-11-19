@@ -29,9 +29,12 @@
                     @if(desplegable === 'informes')
                     {
                         <div id="menu-informes" class="nav-panel">
-                            <button type="button" [class.selected]="pagina === 'reporte-primer-respondiente'" [attr.aria-current]="pagina === 'reporte-primer-respondiente' ? 'page' : null" (click)="navegar('reporte-primer-respondiente')">
-                                <i class="fa-solid fa-file-lines" aria-hidden="true"></i> Reporte primer respondiente
-                            </button>
+                            @if(usuario.rol !== 'FISCALIA')
+                            {
+                                <button type="button" [class.selected]="pagina === 'reporte-primer-respondiente'" [attr.aria-current]="pagina === 'reporte-primer-respondiente' ? 'page' : null" (click)="navegar('reporte-primer-respondiente')">
+                                    <i class="fa-solid fa-file-lines" aria-hidden="true"></i> Reporte primer respondiente
+                                </button>
+                            }
                             @if(usuario.rol !== 'PRIMER_RESPONDIENTE')
                             {
                                 <button type="button" [class.selected]="pagina === 'reporte-completo'" [attr.aria-current]="pagina === 'reporte-completo' ? 'page' : null" (click)="navegar('reporte-completo')">
@@ -85,7 +88,7 @@
         @if(pagina === 'inicio') { <app-inicio (ir)="navegar($event)" /> }
         @if(pagina === 'fiscalias' && puedeFiscalias) { <app-fiscalias /> }
         @if(pagina === 'carga' && puedeCargar) { <app-carga /> }
-        @if(pagina === 'reporte-primer-respondiente' || (pagina === 'reporte-completo' && usuario.rol !== 'PRIMER_RESPONDIENTE'))
+        @if((pagina === 'reporte-primer-respondiente' && usuario.rol !== 'FISCALIA') || (pagina === 'reporte-completo' && usuario.rol !== 'PRIMER_RESPONDIENTE'))
         {
             <app-informes [completo]="pagina === 'reporte-completo'" />
         }

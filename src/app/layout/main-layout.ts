@@ -118,6 +118,7 @@ export class MainLayout
     navegar(pagina: typeof this.pagina)
     {
         if((pagina === 'fiscalias' && !this.puedeFiscalias)
+            || (pagina === 'reporte-primer-respondiente' && this.usuario.rol === 'FISCALIA')
             || (pagina === 'carga' && !this.puedeCargar)
             || (pagina === 'usuarios' && this.usuario.rol !== 'SUPER_USUARIO')
             || (pagina === 'reporte-completo' && this.usuario.rol === 'PRIMER_RESPONDIENTE'))

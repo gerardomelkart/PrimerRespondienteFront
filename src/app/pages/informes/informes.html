@@ -17,7 +17,10 @@
             {
             <div><label for="corporacionInforme">Corporación</label><select id="corporacionInforme" name="corporacion" [(ngModel)]="corporacion" (ngModelChange)="cambiarFiltros()" [disabled]="ocupado() || exportando() || !opciones()?.acceso?.puedeElegirCorporacion">@if(opciones()?.acceso?.puedeElegirCorporacion) { <option value="">Todas las de mi acceso</option> }@for(c of opciones()?.corporaciones ?? []; track c.codigo) { <option [value]="c.codigo">{{ c.nombre }}</option> }</select></div>
             }
-            <div><label for="entidadInforme">Entidad de detención</label><select id="entidadInforme" name="entidad" [(ngModel)]="entidad" (ngModelChange)="cambiarFiltros()" [disabled]="ocupado() || exportando() || !opciones()?.acceso?.puedeElegirEntidad">@if(opciones()?.acceso?.puedeElegirEntidad) { <option value="">Todas las de mi acceso</option> }@for(e of opciones()?.entidades ?? []; track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }</select></div>
+            @if(opciones()?.acceso?.puedeElegirEntidad)
+            {
+                <div><label for="entidadInforme">Entidad de detención</label><select id="entidadInforme" name="entidad" [(ngModel)]="entidad" (ngModelChange)="cambiarFiltros()" [disabled]="ocupado() || exportando() || !opciones()?.acceso?.puedeElegirEntidad">@if(opciones()?.acceso?.puedeElegirEntidad) { <option value="">Todas las de mi acceso</option> }@for(e of opciones()?.entidades ?? []; track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }</select></div>
+            }
             <button type="button" class="secundario" (click)="descargar()" [disabled]="ocupado() || exportando() || !reporte()?.totales?.registros"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar Excel</button>
         </div>
         <small>Los periodos y corporaciones se obtienen de las entregas accesibles, incluidas las quincenas cerradas.</small>
