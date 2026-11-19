@@ -17,6 +17,10 @@ export class UsuariosPage
     @ViewChild('confirmacionEliminar', { static: true }) private confirmacionEliminar!: ElementRef<HTMLDialogElement>;
     readonly porEliminar = signal<Usuario | null>(null);
     readonly errorEliminar = signal('');
+    readonly reactivando = signal(false);
+    readonly mostrarInactivos = signal(false);
+    readonly columnaOrden = signal<'nombre' | 'usuario' | 'accesos' | 'estado'>('nombre');
+    readonly ordenDescendente = signal(false);
     private readonly http = inject(HttpClient);
     readonly session = inject(SessionService);
     readonly ocupado = signal(false);
@@ -49,9 +53,14 @@ export class UsuariosPage
     {
         const texto = this.normalizar(this.busqueda());
         return this.usuarios().filter(usuario => this.normalizar([
-            usuario.nombre, usuario.usuario, usuario.activo ? 'activo' : 'inactivo',
+            usuario.nombre, usuario.usuario, this.estadoUsuario(usuario),
             ...(usuario.accesos ?? []).map(a => this.descripcion(a))
-        ].join(' ')).includes(texto));
+        ].join(' ')).includes(texto)).sort((a, b) => {
+            const columna = this.columnaOrden();
+            const valor = (u: Usuario) => columna === 'accesos' ? (u.accesos ?? []).map(a => this.descripcion(a)).join(' ') : columna === 'estado' ? this.estadoUsuario(u) : u[columna];
+            const comparacion = valor(a).localeCompare(valor(b), 'es', { sensitivity: 'base', numeric: true });
+            return (this.ordenDescendente() ? -comparacion : comparacion) || a.id - b.id;
+        });
     });
     readonly totalPaginas = computed(() => Math.max(1, Math.ceil(this.filtrados().length / this.porPagina)));
     readonly paginaActual = computed(() => Math.min(this.pagina(), this.totalPaginas()));
@@ -61,6 +70,20 @@ export class UsuariosPage
     constructor()
     {
         this.cargarUsuarios();
+    }
+
+    estadoUsuario(usuario: Usuario) { return usuario.eliminado ? 'Eliminado' : usuario.activo ? 'Activo' : 'Inactivo'; }
+
+    ordenar(columna: 'nombre' | 'usuario' | 'accesos' | 'estado')
+    {
+        this.ordenDescendente.set(this.columnaOrden() === columna ? !this.ordenDescendente() : false);
+        this.columnaOrden.set(columna); this.pagina.set(1);
+    }
+    indicador(columna: string) { return this.columnaOrden() === columna ? (this.ordenDescendente() ? ' ▼' : ' ▲') : ' ↕'; }
+    ariaOrden(columna: string) { return this.columnaOrden() === columna ? (this.ordenDescendente() ? 'descending' : 'ascending') : 'none'; }
+    cambiarInactivos(valor: boolean)
+    {
+        this.mostrarInactivos.set(valor); this.pagina.set(1); this.cargarUsuarios();
     }
 
     nombrePerfil(rol: string)
@@ -117,7 +140,15 @@ export class UsuariosPage
     pedirEliminar(usuario: Usuario)
     {
         if(this.ocupado() || usuario.id === this.session.sesion()?.usuario.id) return;
+        this.reactivando.set(false);
         this.porEliminar.set(usuario); this.errorEliminar.set('');
+        this.confirmacionEliminar.nativeElement.showModal();
+    }
+
+    pedirReactivar(usuario: Usuario)
+    {
+        if(this.ocupado() || (usuario.activo && !usuario.eliminado)) return;
+        this.reactivando.set(true); this.porEliminar.set(usuario); this.errorEliminar.set('');
         this.confirmacionEliminar.nativeElement.showModal();
     }
 
@@ -132,7 +163,10 @@ export class UsuariosPage
         const usuario = this.porEliminar();
         if(!usuario || this.ocupado()) return;
         this.ocupado.set(true); this.errorEliminar.set('');
-        this.http.delete<{ mensaje: string }>(`api/usuarios/${usuario.id}`).subscribe({
+        const operacion = this.reactivando()
+            ? this.http.put<{ mensaje: string }>(`api/usuarios/${usuario.id}/reactivar`, {})
+            : this.http.delete<{ mensaje: string }>(`api/usuarios/${usuario.id}`);
+        operacion.subscribe({
             next: respuesta => {
                 this.ocupado.set(false); this.cancelarEliminar();
                 this.mensaje.set(respuesta.mensaje); this.cargarUsuarios();
@@ -143,6 +177,7 @@ export class UsuariosPage
 
     editar(usuario: Usuario)
     {
+        if(usuario.eliminado) return;
         this.editando = usuario.id;
         this.nuevo = { usuario: usuario.usuario, nombre: usuario.nombre, password: '', activo: usuario.activo !== false,
             accesos: (usuario.accesos ?? []).map(a => ({ ...a })) };
@@ -185,7 +220,7 @@ export class UsuariosPage
     cargarUsuarios()
     {
         this.cargando.set(true);
-        forkJoin({ usuarios: this.http.get<Usuario[]>('api/usuarios'), catalogos: this.http.get<CatalogosUsuarios>('api/catalogos/usuarios') }).subscribe({
+        forkJoin({ usuarios: this.http.get<Usuario[]>('api/usuarios', { params: { incluirInactivos: this.mostrarInactivos() } }), catalogos: this.http.get<CatalogosUsuarios>('api/catalogos/usuarios') }).subscribe({
             next: datos =>
             {
                 this.usuarios.set(datos.usuarios);

@@ -34,6 +34,7 @@ export interface Usuario
 {
     debeCambiarPassword: boolean;
     activo?: boolean;
+    eliminado?: boolean;
     idAcceso?: number;
     accesos?: AccesoUsuario[];
     id: number;

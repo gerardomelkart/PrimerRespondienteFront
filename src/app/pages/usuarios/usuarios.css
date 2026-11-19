@@ -228,3 +228,8 @@
 .confirmar-eliminar::backdrop { background: #17202bb3; }
 .acciones-eliminar { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
 .eliminar-cuenta { margin: 4px 0; }
+
+.filtros-usuarios { padding: 16px; }
+.filtros-usuarios label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.orden-usuarios { border: 0; background: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer; text-align: left; padding: 0; }
+.orden-usuarios:focus-visible { outline: 2px solid #bc955c; outline-offset: 4px; }

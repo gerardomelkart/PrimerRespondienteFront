@@ -21,6 +21,7 @@
                 <input type="search" aria-label="Buscar usuarios" placeholder="Buscar por nombre, usuario, institución o perfil..." [ngModel]="busqueda()" (ngModelChange)="buscar($event)">
             </div>
         </div>
+        <div class="filtros-usuarios"><label><input type="checkbox" [ngModel]="mostrarInactivos()" (ngModelChange)="cambiarInactivos($event)" [disabled]="cargando() || ocupado()"> Mostrar inactivos y eliminados</label></div>
         @if(cargando())
         {
             <p class="usuarios-mensaje" role="status">Cargando usuarios…</p>
@@ -29,7 +30,7 @@
         {
             <div class="table-responsive">
                 <table class="usuarios-table">
-                    <thead><tr><th>Nombre</th><th>Usuario</th><th>Accesos asignados</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <thead><tr><th scope="col" [attr.aria-sort]="ariaOrden('nombre')"><button type="button" class="orden-usuarios" (click)="ordenar('nombre')">Nombre{{ indicador('nombre') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('usuario')"><button type="button" class="orden-usuarios" (click)="ordenar('usuario')">Usuario{{ indicador('usuario') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('accesos')"><button type="button" class="orden-usuarios" (click)="ordenar('accesos')">Accesos asignados{{ indicador('accesos') }}</button></th><th scope="col" [attr.aria-sort]="ariaOrden('estado')"><button type="button" class="orden-usuarios" (click)="ordenar('estado')">Estado{{ indicador('estado') }}</button></th><th>Acciones</th></tr></thead>
                     <tbody>
                         @for(usuario of visibles(); track usuario.id)
                         {
@@ -37,8 +38,18 @@
                                 <td class="usuario-nombre">{{ usuario.nombre }}</td>
                                 <td>{{ usuario.usuario }}</td>
                                 <td>@for(acceso of usuario.accesos; track acceso.id) { <div class="acceso-resumen">{{ descripcion(acceso) }}</div> }</td>
-                                <td><span class="rol-badge">{{ usuario.activo ? 'Activo' : 'Inactivo' }}</span></td>
-                                <td><button type="button" class="secundario" (click)="editar(usuario)" [attr.aria-label]="'Editar usuario ' + usuario.usuario">Editar</button> <button type="button" class="secundario eliminar-cuenta" (click)="pedirEliminar(usuario)" [disabled]="ocupado() || usuario.id === session.sesion()?.usuario?.id" [attr.aria-label]="'Eliminar usuario ' + usuario.usuario"><i class="fa-solid fa-trash" aria-hidden="true"></i> Eliminar</button></td>
+                                <td><span class="rol-badge">{{ estadoUsuario(usuario) }}</span></td>
+                                <td>
+                                    @if(usuario.eliminado || !usuario.activo)
+                                    {
+                                        <button type="button" class="secundario" (click)="pedirReactivar(usuario)" [disabled]="ocupado()">Reactivar</button>
+                                    }
+                                    @if(!usuario.eliminado)
+                                    {
+                                        <button type="button" class="secundario" (click)="editar(usuario)" [disabled]="ocupado()" [attr.aria-label]="'Editar usuario ' + usuario.usuario">Editar</button>
+                                        <button type="button" class="secundario eliminar-cuenta" (click)="pedirEliminar(usuario)" [disabled]="ocupado() || usuario.id === session.sesion()?.usuario?.id" [attr.aria-label]="'Eliminar usuario ' + usuario.usuario"><i class="fa-solid fa-trash" aria-hidden="true"></i> Eliminar</button>
+                                    }
+                                </td>
                             </tr>
                         }
                         @empty
@@ -120,12 +131,13 @@
 </dialog>
 
 <dialog #confirmacionEliminar class="confirmar-eliminar" aria-labelledby="tituloEliminar" (cancel)="$event.preventDefault(); cancelarEliminar()">
-    <h2 id="tituloEliminar">Eliminar cuenta</h2>
-    <p>¿Desea eliminar la cuenta <strong>{{ porEliminar()?.usuario }}</strong> de {{ porEliminar()?.nombre }}?</p>
-    <p>La cuenta dejará de aparecer en Usuarios y ya no podrá ingresar. Se conservarán sus cargas y su historial.</p>
+    <h2 id="tituloEliminar">{{ reactivando() ? 'Reactivar cuenta' : 'Eliminar cuenta' }}</h2>
+    <p>¿Desea {{ reactivando() ? 'reactivar' : 'eliminar' }} la cuenta <strong>{{ porEliminar()?.usuario }}</strong> de {{ porEliminar()?.nombre }}?</p>
+    @if(reactivando()) { <p>La cuenta podrá ingresar nuevamente con sus accesos asignados. Se conservarán su contraseña y su historial; las sesiones anteriores seguirán invalidadas.</p> }
+    @else { <p>La cuenta dejará de aparecer en el listado habitual y ya no podrá ingresar. Podrá recuperarla marcando Mostrar inactivos y eliminados.</p> }
     @if(errorEliminar()) { <p class="usuarios-mensaje" role="alert">{{ errorEliminar() }}</p> }
     <div class="acciones-eliminar">
         <button type="button" class="secundario" [disabled]="ocupado()" (click)="cancelarEliminar()" autofocus>Cancelar</button>
-        <button type="button" class="primario" [disabled]="ocupado()" (click)="eliminar()">{{ ocupado() ? 'Eliminando…' : 'Eliminar cuenta' }}</button>
+        <button type="button" class="primario" [disabled]="ocupado()" (click)="eliminar()">{{ ocupado() ? 'Procesando…' : reactivando() ? 'Reactivar cuenta' : 'Eliminar cuenta' }}</button>
     </div>
 </dialog>
