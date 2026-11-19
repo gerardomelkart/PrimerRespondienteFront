@@ -46,6 +46,7 @@
                 </div>
                 @if(usuario.rol === 'SUPER_USUARIO')
                 {
+                    <button type="button" class="nav-link" [class.active]="pagina === 'reaperturas'" (click)="navegar('reaperturas')">Reaperturas</button>
                     <button type="button" class="nav-link" [class.active]="pagina === 'usuarios'" [attr.aria-current]="pagina === 'usuarios' ? 'page' : null" (click)="navegar('usuarios')">
                         <i class="fa-solid fa-users" aria-hidden="true"></i> Usuarios
                     </button>
@@ -92,6 +93,7 @@
         {
             <app-informes [completo]="pagina === 'reporte-completo'" />
         }
+        @if(pagina === 'reaperturas' && usuario.rol === 'SUPER_USUARIO') { <app-reaperturas /> }
         @if(pagina === 'usuarios' && usuario.rol === 'SUPER_USUARIO') { <app-usuarios /> }
         <footer>Centro Nacional de Información · Secretariado Ejecutivo del Sistema Nacional de Seguridad Pública</footer>
     </main>

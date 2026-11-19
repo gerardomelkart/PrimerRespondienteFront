@@ -2,6 +2,7 @@ import { Component, ElementRef, HostListener, inject, signal } from '@angular/co
 import { FormsModule } from '@angular/forms';
 import { AccesoUsuario, Usuario } from '../core/models/modelos';
 import { SessionService } from '../core/services/session.service';
+import { ReaperturasPage } from '../pages/usuarios/reaperturas';
 import { InicioPage } from '../pages/inicio/inicio';
 import { CargaPage } from '../pages/carga/carga';
 import { UsuariosPage } from '../pages/usuarios/usuarios';
@@ -10,7 +11,7 @@ import { InformesPage } from '../pages/informes/informes';
 
 @Component({
     selector: 'app-main-layout',
-    imports: [FormsModule, InicioPage, CargaPage, UsuariosPage, InformesPage, FiscaliasPage],
+    imports: [FormsModule, InicioPage, CargaPage, UsuariosPage, InformesPage, FiscaliasPage, ReaperturasPage],
     templateUrl: './main-layout.html',
     styleUrl: './main-layout.css'
 })
@@ -18,7 +19,7 @@ export class MainLayout
 {
     readonly session = inject(SessionService);
     private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
-    pagina: 'inicio' | 'carga' | 'reporte-primer-respondiente' | 'reporte-completo' | 'usuarios' | 'fiscalias' = 'inicio';
+    pagina: 'inicio' | 'carga' | 'reporte-primer-respondiente' | 'reporte-completo' | 'usuarios' | 'fiscalias' | 'reaperturas' = 'inicio';
     desplegable: 'informes' | 'cuenta' | null = null;
     menuAbierto = false;
     readonly cambiandoAcceso = signal(false);
@@ -110,6 +111,7 @@ export class MainLayout
             case 'reporte-primer-respondiente': return 'Reporte primer respondiente';
             case 'reporte-completo': return 'Reporte completo';
             case 'fiscalias': return 'Plantilla de fiscalías';
+            case 'reaperturas': return 'Reapertura de entregas';
             case 'usuarios': return 'Usuarios';
             default: return 'Inicio';
         }
@@ -120,7 +122,7 @@ export class MainLayout
         if((pagina === 'fiscalias' && !this.puedeFiscalias)
             || (pagina === 'reporte-primer-respondiente' && this.usuario.rol === 'FISCALIA')
             || (pagina === 'carga' && !this.puedeCargar)
-            || (pagina === 'usuarios' && this.usuario.rol !== 'SUPER_USUARIO')
+            || ((pagina === 'usuarios' || pagina === 'reaperturas') && this.usuario.rol !== 'SUPER_USUARIO')
             || (pagina === 'reporte-completo' && this.usuario.rol === 'PRIMER_RESPONDIENTE'))
         {
             return;

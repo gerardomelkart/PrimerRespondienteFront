@@ -1,4 +1,5 @@
 import { Component, ElementRef, afterRenderEffect, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
+import { CompletoPage } from './completo';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
@@ -26,7 +27,7 @@ interface Opciones
 }
 
 @Component({
-    selector: 'app-informes', imports: [CommonModule, FormsModule],
+    selector: 'app-informes', imports: [CommonModule, FormsModule, CompletoPage],
     templateUrl: './informes.html', styleUrl: './informes.css'
 })
 export class InformesPage

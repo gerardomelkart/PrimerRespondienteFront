@@ -2,7 +2,7 @@
 <h1>{{ completo() ? 'Reporte completo' : 'Reporte primer respondiente' }}</h1>
 @if(completo())
 {
-    <section class="tarjeta"><h2>Seguimiento ministerial</h2><p class="muted">El reporte completo estará disponible al integrar las respuestas de fiscalías.</p></section>
+    <app-completo />
 }
 @else
 {
