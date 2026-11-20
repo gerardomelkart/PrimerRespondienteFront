@@ -9,7 +9,11 @@ interface Entrega { modulo:string; folio:string; alcance:string; inicio:string; 
 .filtros {display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;align-items:end}
 .filtros label {display:grid;gap:6px}
 .orden {border:0;background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer}
-.acciones {align-items:center;flex-wrap:wrap}
+.paginador, .grupo-pagina, .grupo-pagina label {display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.paginador {justify-content:space-between;margin-top:16px;gap:16px}
+.grupo-pagina label {margin:0;gap:8px}
+.grupo-pagina select {width:auto;margin:0}
+@media (max-width:600px) {.grupo-pagina {width:100%}}
 `],template:`
 <h1>Reapertura de entregas</h1><section class="tarjeta"><h2>Filtros de consulta</h2><div class="filtros">
 <label>Año<select [(ngModel)]="anio" (ngModelChange)="filtrar()"><option value="">Todos</option>@for(a of catalogos().anios;track a){<option [value]="a">{{a}}</option>}</select></label>
@@ -21,7 +25,7 @@ interface Entrega { modulo:string; folio:string; alcance:string; inicio:string; 
 @if(mensaje()) { <p role="status">{{ mensaje() }}</p> }
 <div class="tabla-scroll"><table><thead><tr>@for(c of columnas;track c.clave){<th scope="col" [attr.aria-sort]="orden===c.clave?(descendente?'descending':'ascending'):'none'"><button class="orden" (click)="ordenar(c.clave)">{{c.nombre}} {{orden===c.clave?(descendente?'▼':'▲'):'↕'}}</button></th>}</tr></thead>
 <tbody>@for(e of entregas();track e.folio) { <tr><td>{{e.modulo}}</td><td>{{e.inicio|date:'dd/MM/yyyy'}} al {{e.fin|date:'dd/MM/yyyy'}}</td><td>{{e.alcance}}</td><td>{{e.folio}}</td><td>
-@if(e.reabierta) { Autorizada para corrección } @else { <button class="secundario" [disabled]="ocupado()" (click)="elegida=e; dialogo.showModal()">Reabrir</button> }</td></tr> } @empty { <tr><td colspan="5">{{consultando()?'Consultando…':'Sin entregas para estos filtros.'}}</td></tr> }</tbody></table></div><nav class="acciones"><span>{{total()}} entregas</span><label>Filas por página <select [(ngModel)]="tamano" (ngModelChange)="filtrar()">@for(n of [20,50,100];track n){<option [ngValue]="n">{{n}}</option>}</select></label><button class="secundario" [disabled]="pagina<=1 || consultando()" (click)="mover(-1)">Anterior</button><span>Página {{pagina}} de {{paginas}}</span><button class="secundario" [disabled]="pagina>=paginas || consultando()" (click)="mover(1)">Siguiente</button></nav></section>
+@if(e.reabierta) { Autorizada para corrección } @else { <button class="secundario" [disabled]="ocupado()" (click)="elegida=e; dialogo.showModal()">Reabrir</button> }</td></tr> } @empty { <tr><td colspan="5">{{consultando()?'Consultando…':'Sin entregas para estos filtros.'}}</td></tr> }</tbody></table></div><nav class="paginador" aria-label="Paginación de entregas"><div class="grupo-pagina"><span>{{total()}} {{total() === 1 ? 'entrega' : 'entregas'}}</span><label>Filas por página <select [(ngModel)]="tamano" (ngModelChange)="filtrar()">@for(n of [20,50,100];track n){<option [ngValue]="n">{{n}}</option>}</select></label></div><div class="grupo-pagina"><button class="secundario" [disabled]="pagina<=1 || consultando()" (click)="mover(-1)">Anterior</button><span>Página {{pagina}} de {{paginas}}</span><button class="secundario" [disabled]="pagina>=paginas || consultando()" (click)="mover(1)">Siguiente</button></div></nav></section>
 <dialog #dialogo><h2>Reabrir entrega</h2><p>¿Autorizar una corrección de {{elegida?.alcance}} para el folio {{elegida?.folio}}?</p>
 <p>La entrega actual seguirá vigente hasta confirmar la corrección.</p><div class="acciones"><button class="secundario" (click)="dialogo.close()">Cancelar</button><button class="primario" (click)="dialogo.close(); reabrir()">Autorizar reapertura</button></div></dialog>`})
 export class ReaperturasPage implements OnDestroy {
