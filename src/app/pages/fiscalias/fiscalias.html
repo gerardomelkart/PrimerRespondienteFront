@@ -46,6 +46,7 @@
 <section class="tarjeta resultado" aria-live="polite">
 @if(r.errores.length) { <div class="aviso" role="alert"><strong>La carga no puede continuar porque hay datos que revisar.</strong><p>Corrija los errores del archivo y vuelva a cargarlo.</p></div> }
 <div class="acciones"><button type="button" class="secundario" (click)="limpiar()">Regresar y hacer otra carga</button></div>
+@if(r.omitidos){<p role="status">{{ r.omitidos }} filas del archivo ya fueron atendidas por otra entrega. Se omiten de esta confirmación.</p>}
 <div class="resultado-cabecera"><div><h2>{{ r.errores.length ? 'Revise los errores del archivo' : 'Archivo validado' }}</h2><p>{{ r.esperados }} detenciones precargadas · {{ r.recibidos }} recibidas · {{ r.noRecibidos }} no recibidas</p></div>
 @if(r.errores.length) { <button type="button" class="secundario" (click)="exportarErrores()">Descargar resultados en Excel</button> }</div>
 @if(r.errores.length) {
@@ -68,12 +69,12 @@
             </nav>
 } @else { <button class="primario" type="button" (click)="abrirAcuse()">Revisar acuse y confirmar</button> }
 </section> } }
-@if(entrega(); as e) { <section class="tarjeta entrega-finalizada" role="status"><div><strong><i class="fa-solid fa-circle-check"></i> Entrega recibida · {{ e.folio }}</strong><p>{{ e.recibidos }} recibidas · {{ e.noRecibidos }} no recibidas</p></div><div class="acciones"><button class="secundario" (click)="volver()">Volver a las entregas</button><button class="secundario" (click)="abrirAcuse()">Ver acuse</button></div></section> }
+@if(entrega(); as e) { <section class="tarjeta entrega-finalizada" role="status"><div><strong><i class="fa-solid fa-circle-check"></i> Entrega recibida · {{ e.folio }}</strong>@if(e.omitidos){<p>{{ e.omitidos }} filas ya atendidas se excluyeron del acuse.</p>}<p>{{ e.recibidos }} recibidas · {{ e.noRecibidos }} no recibidas</p></div><div class="acciones"><button class="secundario" (click)="volver()">Volver a las entregas</button><button class="secundario" (click)="abrirAcuse()">Ver acuse</button></div></section> }
 <dialog #modalAcuse class="modal-acuse" aria-labelledby="titulo-acuse" (cancel)="cerrarAcuse($event)">
     <div class="acuse-cabecera"><div><span>FISCALÍA</span><h2 id="titulo-acuse">{{ entrega() ? 'Acuse definitivo de entrega' : 'Vista previa del acuse' }}</h2></div><button type="button" class="cerrar-acuse" aria-label="Cerrar acuse" (click)="cerrarAcuse()" [disabled]="ocupado()">×</button></div>
     <div class="acuse-resumen" aria-live="polite">
         @if(entrega(); as carga) { <strong>Entrega recibida · {{ carga.folio }}</strong><span>{{ (carga.recibidos + carga.noRecibidos) | number }} registros aceptados</span> }
-        @else { <strong>La entrega aún no está confirmada.</strong><span>{{ resultado()?.recibidos }} recibidas · {{ resultado()?.noRecibidos }} no recibidas.</span> }
+        @else { <strong>La entrega aún no está confirmada.</strong>@if(resultado()?.omitidos){<span>{{ resultado()?.omitidos }} filas ya atendidas se excluyen de esta entrega.</span>}<span>{{ resultado()?.recibidos }} recibidas · {{ resultado()?.noRecibidos }} no recibidas.</span> }
     </div>
     <div class="acuse-contenido">
         @if(ocupado()) { <p role="status"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Generando acuse…</p> }

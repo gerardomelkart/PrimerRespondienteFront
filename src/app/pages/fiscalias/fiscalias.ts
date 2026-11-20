@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 
-interface Entrega { id: number; folio: string; inicio: string; fin: string; recibidos: number; noRecibidos: number; }
-interface Validacion { previo?: string; esperados: number; recibidos: number; noRecibidos: number; errores: { fila: number | null; campo: string; detalle: string }[]; }
+interface Entrega { omitidos?: number; id: number; folio: string; inicio: string; fin: string; recibidos: number; noRecibidos: number; }
+interface Validacion { omitidos?: number; previo?: string; esperados: number; recibidos: number; noRecibidos: number; errores: { fila: number | null; campo: string; detalle: string }[]; }
 interface Opciones { entregas: Entrega[]; periodos: { inicio: string; fin: string; nombre: string }[]; }
 @Component({
     selector: 'app-fiscalias', imports: [FormsModule, DecimalPipe, DatePipe], templateUrl: './fiscalias.html', styleUrls: ['../carga/carga.css', './fiscalias.css']
