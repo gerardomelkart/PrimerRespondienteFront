@@ -67,7 +67,7 @@ No hay credenciales predeterminadas. Las cuentas se autentican contra la API y s
 
 | Pantalla | Estado |
 | --- | --- |
-| Acceso | Autenticación JWT y sesión en memoria. Recargar o cerrar la pestaña requiere volver a ingresar. |
+| Acceso | Autenticación JWT con sesión por pestaña. Al recargar se recupera la sesión mientras siga vigente. |
 | Inicio | Bienvenida y acceso a las operaciones del perfil. Se regresa desde la marca de la barra de navegación o desde el menú de la cuenta. |
 | Carga de información | Plantilla, selección/arrastre XLSX, periodo quincenal desde BD, errores por fila, observaciones, confirmación, folio y acuse. Disponible para primer respondiente y superusuario; este último elige la corporación. |
 | Informes | Submenú con “Reporte primer respondiente” y “Reporte completo”. Reporte primer respondiente consulta datos reales y exporta Excel; Reporte completo continúa en preparación. El primer respondiente no tiene acceso al reporte completo. |
