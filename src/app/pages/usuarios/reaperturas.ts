@@ -25,9 +25,14 @@ interface Entrega { modulo:string; folio:string; alcance:string; inicio:string; 
 @if(mensaje()) { <p role="status">{{ mensaje() }}</p> }
 <div class="tabla-scroll"><table><thead><tr>@for(c of columnas;track c.clave){<th scope="col" [attr.aria-sort]="orden===c.clave?(descendente?'descending':'ascending'):'none'"><button class="orden" (click)="ordenar(c.clave)">{{c.nombre}} {{orden===c.clave?(descendente?'▼':'▲'):'↕'}}</button></th>}</tr></thead>
 <tbody>@for(e of entregas();track e.folio) { <tr><td>{{e.modulo}}</td><td>{{e.inicio|date:'dd/MM/yyyy'}} al {{e.fin|date:'dd/MM/yyyy'}}</td><td>{{e.alcance}}</td><td>{{e.folio}}</td><td>
-@if(e.reabierta) { Autorizada para corrección } @else { <button class="secundario" [disabled]="ocupado()" (click)="elegida=e; dialogo.showModal()">Reabrir</button> }</td></tr> } @empty { <tr><td colspan="5">{{consultando()?'Consultando…':'Sin entregas para estos filtros.'}}</td></tr> }</tbody></table></div><nav class="paginador" aria-label="Paginación de entregas"><div class="grupo-pagina"><span>{{total()}} {{total() === 1 ? 'entrega' : 'entregas'}}</span><label>Filas por página <select [(ngModel)]="tamano" (ngModelChange)="filtrar()">@for(n of [20,50,100];track n){<option [ngValue]="n">{{n}}</option>}</select></label></div><div class="grupo-pagina"><button class="secundario" [disabled]="pagina<=1 || consultando()" (click)="mover(-1)">Anterior</button><span>Página {{pagina}} de {{paginas}}</span><button class="secundario" [disabled]="pagina>=paginas || consultando()" (click)="mover(1)">Siguiente</button></div></nav></section>
+@if(e.reabierta) { Autorizada para corrección } @else { <button class="secundario" [disabled]="ocupado()" (click)="preparar(e, dialogo)">Reabrir</button> }</td></tr> } @empty { <tr><td colspan="5">{{consultando()?'Consultando…':'Sin entregas para estos filtros.'}}</td></tr> }</tbody></table></div><nav class="paginador" aria-label="Paginación de entregas"><div class="grupo-pagina"><span>{{total()}} {{total() === 1 ? 'entrega' : 'entregas'}}</span><label>Filas por página <select [(ngModel)]="tamano" (ngModelChange)="filtrar()">@for(n of [20,50,100];track n){<option [ngValue]="n">{{n}}</option>}</select></label></div><div class="grupo-pagina"><button class="secundario" [disabled]="pagina<=1 || consultando()" (click)="mover(-1)">Anterior</button><span>Página {{pagina}} de {{paginas}}</span><button class="secundario" [disabled]="pagina>=paginas || consultando()" (click)="mover(1)">Siguiente</button></div></nav></section>
 <dialog #dialogo><h2>Reabrir entrega</h2><p>¿Autorizar una corrección de {{elegida?.alcance}} para el folio {{elegida?.folio}}?</p>
-<p>La entrega actual seguirá vigente hasta confirmar la corrección.</p><div class="acciones"><button class="secundario" (click)="dialogo.close()">Cancelar</button><button class="primario" (click)="dialogo.close(); reabrir()">Autorizar reapertura</button></div></dialog>`})
+<p>El acuse dejará de estar vigente al autorizar la reapertura.</p>
+@if(afectadas().length) {
+<p>También se reabrirán estas entregas completas de Fiscalía:</p>
+<ul>@for(f of afectadas(); track f.id) { <li>{{f.alcance}} · {{f.folio}}</li> }</ul>
+<p>Cuando Primer Respondiente confirme la corrección, cada fiscalía deberá descargar una plantilla nueva y entregar todas sus respuestas.</p>
+}<div class="acciones"><button class="secundario" (click)="dialogo.close()">Cancelar</button><button class="primario" (click)="dialogo.close(); reabrir()">Autorizar reapertura</button></div></dialog>`})
 export class ReaperturasPage implements OnDestroy {
     private http=inject(HttpClient);
     private consulta?:Subscription;
@@ -57,9 +62,20 @@ export class ReaperturasPage implements OnDestroy {
             error:()=>{this.total.set(0);this.consultando.set(false);this.mensaje.set('No fue posible consultar las entregas.');}
         });
     }
+    afectadas = signal<{id:number; folio:string; alcance:string}[]>([]);
+    preparar(entrega:Entrega, dialogo:HTMLDialogElement){
+        this.elegida=entrega;
+        this.afectadas.set([]);
+        if(entrega.modulo !== 'Primer respondiente'){ dialogo.showModal(); return; }
+        this.ocupado.set(true);
+        this.http.get<{id:number; folio:string; alcance:string}[]>('api/reaperturas/'+encodeURIComponent(entrega.folio)+'/impacto').subscribe({
+            next:filas=>{this.afectadas.set(filas);this.ocupado.set(false);dialogo.showModal();},
+            error:()=>{this.ocupado.set(false);this.mensaje.set('No fue posible consultar las entregas de Fiscalía afectadas.');}
+        });
+    }
     reabrir(){if(!this.elegida || this.ocupado())return;
         this.ocupado.set(true);
-        this.http.post('api/reaperturas/'+encodeURIComponent(this.elegida.folio),{}).subscribe({
+        this.http.post('api/reaperturas/'+encodeURIComponent(this.elegida.folio),{entregas:this.afectadas().map(f=>f.id)}).subscribe({
             next:()=>{this.mensaje.set('Reapertura autorizada para '+this.elegida!.folio+'.');this.ocupado.set(false);this.cargar();},
             error:e=>{this.mensaje.set(e.error?.mensaje ?? 'No fue posible reabrir la entrega.');this.ocupado.set(false);this.cargar();}
         });

@@ -4,6 +4,9 @@
 @if(periodo && !resultado() && !entrega()) {
 <button type="button" class="secundario" (click)="descargar()" [disabled]="ocupado()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Descargar plantilla</button>
 }</div>
+@for(p of opciones()?.enCorreccion ?? []; track p.inicio) {
+    <p class="aviso" role="status">{{ p.nombre }} · Primer Respondiente está corrigiendo su carga. Cuando confirme, descargue la plantilla nueva y presente la entrega completa.</p>
+}
 <div class="progreso"><span [class.actual]="!resultado() && !entrega()">1. Seleccionar archivo</span><span [class.actual]="resultado() && !entrega()">2. Revisar validación</span><span [class.actual]="entrega()">3. Folio y acuse</span></div>
 @if(!resultado() && !entrega()) {
 <section class="tarjeta"><h2>Datos de la entrega</h2>
